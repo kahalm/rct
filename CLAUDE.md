@@ -71,5 +71,6 @@ Kalkulations-Serie/Scheduler, Benachrichtigungen, Offline/PWA — alles was nich
 
 ## Status
 
-Milestones 1–2 committet (Backend + Frontend, Builds grün, API-Rauchtest 11/11).
-Milestone 3 (Docker/Compose/CI) in Arbeit.
+Milestones 1–3 committet: Backend (API-Rauchtest 11/11), Frontend (ng build grün),
+Docker/Compose/CI (Full-Stack-Smoke-Test durch nginx grün). Kein Git-Remote, kein Deploy —
+Remote/Hosting entscheidet der Betreiber.
