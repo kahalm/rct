@@ -59,6 +59,17 @@ Breakdown-Video: https://www.youtube.com/watch?v=EgDwm7AOLTg
 Nicht übernommen: Repertoires, Turniere, Puzzles, Freunde, Endless, Kurse-allgemein, Chessable-Import,
 Kalkulations-Serie/Scheduler, Benachrichtigungen, Offline/PWA — alles was nicht Auth oder Calc-Trial ist.
 
+## Build/Dev-Konventionen
+
+- .NET 10 SDK in `~/.dotnet` (nicht im PATH): `export PATH="$HOME/.dotnet:$PATH"`; `dotnet ef` braucht
+  `ConnectionStrings__DefaultConnection` als Env (DesignTimeDbContextFactory wirft sonst).
+- Frontend: Node 24 (via `~/.local/bin`), `npx ng build` / `npx ng serve` (Proxy `/api`→`localhost:5080`).
+- JWT: `Jwt__Key` ≥ 32 Bytes Pflicht (Fail-fast beim Start).
+- CI: Push auf `main` → `:dev`-Images (ghcr.io/kahalm/rct-api|rct-frontend), Tag `v*` → `:latest`.
+  Gate ist vorerst Build-only (kein Test-Projekt) — bei Einführung von Tests `test.yml` umstellen.
+- Versionskonvention wie RookHub: `src/environments/changelog.ts` (APP_VERSION, nur typografische „…").
+
 ## Status
 
-Im Aufbau (Scaffold). Siehe Git-Historie.
+Milestones 1–2 committet (Backend + Frontend, Builds grün, API-Rauchtest 11/11).
+Milestone 3 (Docker/Compose/CI) in Arbeit.
