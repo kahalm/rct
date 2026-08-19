@@ -56,7 +56,7 @@
   "auth": {
     "login": {
       "title": "Anmelden",
-      "usernameLabel": "Benutzername",
+      "usernameLabel": "Benutzername oder E-Mail",
       "passwordLabel": "Passwort",
       "submit": "Anmelden",
       "submitting": "Anmeldung läuft...",

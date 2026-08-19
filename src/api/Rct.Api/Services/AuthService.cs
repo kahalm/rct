@@ -120,8 +120,12 @@ public class AuthService
         var delay = LoginThrottleDelay(LoginFailures.Get<int?>(failureKey) ?? 0);
         if (delay > TimeSpan.Zero) await Task.Delay(delay);
 
+        // Login per Benutzername ODER E-Mail: RCT verlangt die E-Mail bei der Registrierung
+        // ausdrücklich „für den Login" (Hint auf der Registrierseite) — also muss sie hier auch
+        // funktionieren. E-Mail ist lowercase-normalisiert gespeichert → normalisiert vergleichen.
+        var normalized = loginName.Trim().ToLower();
         var user = await _db.AppUsers
-            .FirstOrDefaultAsync(u => u.Username.ToLower() == loginName.ToLower());
+            .FirstOrDefaultAsync(u => u.Username.ToLower() == normalized || u.Email == normalized);
 
         // Konstante Antwortzeit unabhängig von der Existenz des Users: immer einen BCrypt-Verify
         // gegen einen Dummy-Hash ausführen, statt ihn per || zu überspringen (verhindert
