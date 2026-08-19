@@ -224,6 +224,12 @@
     "analyze": {
       "open": "Analyse",
       "hint": "Deine Linie mit der Engine prüfen"
+    },
+    "timeLimit": {
+      "title": "45 Minuten sind um",
+      "body": "Laut Guidelines: Notiere die endgültige Entscheidung für deine aktuelle Stellung — und höre auf. Der Test ist absichtlich schwer; der ehrliche Schlussstrich gehört zum Training.",
+      "review": "Mach danach eine echte Pause und schau das Breakdown-Video auf der Trial-Seite an, um deinen Denkprozess zu prüfen.",
+      "ok": "Verstanden"
     }
   },
   "courses": {

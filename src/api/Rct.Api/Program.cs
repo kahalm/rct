@@ -180,6 +180,9 @@ try
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.Migrate();
         await Rct.Api.Services.RctSeeder.SeedAsync(db);
+        // Admin-Konto aus ADMIN_USERNAME/ADMIN_PASSWORD(/ADMIN_EMAIL) — nur wenn es noch nicht
+        // existiert; Platzhalter 'change_me' wird verweigert (siehe AdminSeeder).
+        await Rct.Api.Services.AdminSeeder.SeedAsync(db, app.Configuration);
     }
 
     // Global exception handler

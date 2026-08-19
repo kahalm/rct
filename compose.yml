@@ -39,6 +39,10 @@ services:
       Jwt__Key: ${JWT_KEY:?JWT_KEY must be set (>=32 bytes)}
       Jwt__Issuer: Rct
       Jwt__Audience: Rct
+      # Admin-Seed beim Start (nur wenn Konto fehlt; 'change_me' wird verweigert).
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
     ports:
       - "${API_EXTERNAL_PORT:-5080}:8080"

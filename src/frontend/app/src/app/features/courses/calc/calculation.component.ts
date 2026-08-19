@@ -39,6 +39,7 @@ import {
 import { LocalCalculationBackend } from './calc-local.backend';
 import { CalcGradeDialogComponent, CalcGradeDialogResult } from './calc-grade-dialog.component';
 import { CalcSettingsDialogComponent } from './calc-settings-dialog.component';
+import { CalcTimelimitDialogComponent } from './calc-timelimit-dialog.component';
 import { BoardFullscreenButtonComponent } from '../../../shared/fullscreen/board-fullscreen-button.component';
 import {
   CalcTimerDialogComponent, CalcTimerDialogData, CalcTimerDialogResult,
@@ -460,7 +461,10 @@ export class CalculationComponent implements OnInit, OnDestroy {
     const requested = Number(this.route.snapshot.queryParamMap.get('pos')) || null;
     this.loadBook(requested);
     // Nur Anzeige: die Stoppuhr selbst zählt ohne Takt weiter (und pausiert bei verstecktem Tab).
-    this.liveHandle = setInterval(() => { this.liveSeconds = this.currentWatchSeconds(); }, 1000);
+    this.liveHandle = setInterval(() => {
+      this.liveSeconds = this.currentWatchSeconds();
+      this.checkTrialTimeLimit();
+    }, 1000);
   }
 
   /**
@@ -1114,6 +1118,30 @@ export class CalculationComponent implements OnInit, OnDestroy {
 
   private currentWatchSeconds(): number {
     return this.watchPositionId === null ? 0 : this.watch.elapsedSeconds;
+  }
+
+  // ===== RCT: 45-Minuten-Hinweis (Guidelines: „Hard stop") ==================
+
+  /** Guidelines-Limit des Trials: 45 Minuten aktive Rechenzeit über alle Stellungen. */
+  private static readonly TrialTimeLimitSeconds = 45 * 60;
+  private timeLimitNotified = false;
+
+  private timeLimitKey(): string { return `rct_calc_timelimit_${this.bookId}`; }
+
+  /**
+   * Zeigt EINMALIG (je Buch, localStorage-persistiert) einen Hinweis, sobald die aufsummierte
+   * aktive Rechenzeit aller Stellungen das 45-Minuten-Limit erreicht. Bewusst KEIN Zwangs-Stopp —
+   * die Guidelines verlangen Selbstdisziplin („write down your final decision and immediately
+   * stop"), der Trainer bleibt bedienbar. Quelle: Server-Sekunden je Stellung + laufende Stoppuhr.
+   */
+  private checkTrialTimeLimit(): void {
+    if (this.timeLimitNotified) return;
+    try { if (localStorage.getItem(this.timeLimitKey())) { this.timeLimitNotified = true; return; } } catch {}
+    const total = this.positions.reduce((sum, p) => sum + (p.secondsSpent ?? 0), 0) + this.liveSeconds;
+    if (total < CalculationComponent.TrialTimeLimitSeconds) return;
+    this.timeLimitNotified = true;
+    try { localStorage.setItem(this.timeLimitKey(), new Date().toISOString()); } catch {}
+    this.dialog.open(CalcTimelimitDialogComponent, { width: '420px' });
   }
 
   // ===== Senden (eigener Endpoint neben dem Baum) ===========================

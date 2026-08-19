@@ -224,6 +224,12 @@
     "analyze": {
       "open": "Analysis",
       "hint": "Check your line with the engine"
+    },
+    "timeLimit": {
+      "title": "45 minutes are up",
+      "body": "Per the guidelines: write down your final decision for your current position — and stop. The test is deliberately hard; an honest hard stop is part of the training.",
+      "review": "Then take a physical break and watch the breakdown video on the trial page to audit your thought process.",
+      "ok": "Got it"
     }
   },
   "courses": {
