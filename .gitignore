@@ -1,0 +1,36 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.db
+
+## Node / Angular
+node_modules/
+dist/
+.angular/
+
+## IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+
+## Environment
+.env
+.env.dev
+.env.vpn
+.env.dev.vpn
+
+## Docker
+rookhub-db-data/
+
+## Test artifacts
+playwright-report/
+test-results/
+.auth-state.json
+
+## OS
+Thumbs.db
+.DS_Store
+__pycache__/
