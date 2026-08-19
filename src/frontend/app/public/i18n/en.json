@@ -74,7 +74,7 @@
       "submitting": "Registering...",
       "loginLink": "Already have an account? Login",
       "failed": "Registration failed",
-      "emailHint": "Required — used to sign in to your account and for important updates."
+      "emailHint": "Required for sign-in and important updates."
     }
   },
   "common": {

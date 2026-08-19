@@ -74,7 +74,7 @@
       "submitting": "Registrierung läuft...",
       "loginLink": "Bereits ein Konto? Anmelden",
       "failed": "Registrierung fehlgeschlagen",
-      "emailHint": "Pflichtfeld — für dein Konto und wichtige Mitteilungen."
+      "emailHint": "Pflichtfeld — für Login und wichtige Mitteilungen."
     }
   },
   "common": {

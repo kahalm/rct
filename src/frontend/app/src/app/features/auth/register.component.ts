@@ -55,6 +55,10 @@ import { SnackbarService } from '../../core/snackbar.service';
     mat-card { width: 400px; max-width: 90vw; }
     .auth-form { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1rem; }
     mat-form-field { width: 100%; }
+    /* Material reserviert für Hints nur EINE Zeile (Hint-Wrapper ist absolut positioniert) —
+       ein umbrechender Hint (schmale Screens) malte sonst über das nächste Feld. */
+    ::ng-deep .auth-form .mat-mdc-form-field-subscript-wrapper { height: auto; }
+    ::ng-deep .auth-form .mat-mdc-form-field-hint-wrapper { position: static; }
   `]
 })
 export class RegisterComponent {
