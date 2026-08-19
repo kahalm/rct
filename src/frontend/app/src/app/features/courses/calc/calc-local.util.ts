@@ -1,0 +1,261 @@
+import { CalcGrade, CalcReview, CalcReviewPatch, applyReviewPatch, emptyReview, normalizeGrade } from './calc-review.util';
+
+/**
+ * Geräte-lokaler Speicher des Kalkulations-Modus für NICHT ANGEMELDETE Nutzer.
+ *
+ * Ein öffentlicher Kalkulations-Kurs (`/{slug}`) ist ohne Konto benutzbar: Baum, Festlegung,
+ * Rechenzeit und Bewertung entstehen genauso — sie gehen nur nicht an den Server, sondern
+ * hierher. **Das ist die sichere Variante**: die Kalkulations-Endpoints müssen für SCHREIBzugriffe
+ * gar nicht geöffnet werden (keine nullable UserId, keine anonyme Sitzungs-Id, keine neue
+ * Schreib-Angriffsfläche). Serverseitige Persistenz bleibt angemeldeten Nutzern vorbehalten.
+ *
+ * Gleiches Muster wie die übrigen Offline-Speicher (`core/offline.service.ts`,
+ * `features/puzzles/book-offline.util.ts`): ein localStorage-Schlüssel je Buch, alles in
+ * try/catch — ein voller oder gesperrter Speicher (Privatmodus, Quota) darf NIE werfen, sondern
+ * kostet höchstens die Persistenz.
+ */
+
+/** localStorage-Präfix; ein Schlüssel je Buch (`…_<bookId>`). */
+export const CALC_LOCAL_PREFIX = 'rookhub_calc_local_';
+
+/**
+ * Deckel: so viele Stellungen hält ein Buch lokal fest. Ein Kurs kann hunderte Stellungen haben,
+ * und ein Baum darf groß werden — ohne Obergrenze frisst ein einziger Kurs das ganze
+ * localStorage-Kontingent (und nimmt damit Offline-Büchern/Repertoires den Platz weg).
+ * Verdrängt wird die am längsten nicht angefasste Stellung.
+ */
+export const CALC_LOCAL_MAX_POSITIONS = 150;
+
+/** Deckel je Baum (Zeichen). Der Server erlaubt 256 KB; lokal ist der Platz knapper. */
+export const CALC_LOCAL_MAX_TREE_CHARS = 64 * 1024;
+
+/** Was zu EINER Stellung lokal liegt: der Baum plus die drei Trainings-Werte. */
+export interface CalcLocalEntry {
+  /** Serialisierter Analysebaum; `null` = keiner (die Zeile trägt dann nur Trainings-Werte). */
+  tree: string | null;
+  /** Zeitpunkt der letzten Baum-Speicherung (ISO) — Gegenstück zu `treeUpdatedAt` vom Server. */
+  updatedAt: string | null;
+  chosenSan: string | null;
+  chosenUci: string | null;
+  secondsSpent: number;
+  grade: CalcGrade | null;
+  /** Letzte Berührung (ms) — nur für die Verdrängung, nie angezeigt. */
+  touchedAt: number;
+}
+
+export type CalcLocalEntries = Record<string, CalcLocalEntry>;
+
+interface CalcLocalStore {
+  v: number;
+  entries: CalcLocalEntries;
+}
+
+function storageKey(bookId: number): string {
+  return `${CALC_LOCAL_PREFIX}${bookId}`;
+}
+
+function emptyEntry(): CalcLocalEntry {
+  return { tree: null, updatedAt: null, chosenSan: null, chosenUci: null, secondsSpent: 0, grade: null, touchedAt: 0 };
+}
+
+/** Fremden/alten Inhalt auf die erwartete Form bringen — kaputte Einträge fliegen still raus. */
+function sanitize(raw: unknown): CalcLocalEntries {
+  const out: CalcLocalEntries = {};
+  const entries = (raw as CalcLocalStore | null)?.entries;
+  if (!entries || typeof entries !== 'object') return out;
+  for (const [id, value] of Object.entries(entries as Record<string, unknown>)) {
+    if (!/^\d+$/.test(id) || !value || typeof value !== 'object') continue;
+    const v = value as Partial<CalcLocalEntry>;
+    const tree = typeof v.tree === 'string' && v.tree.length > 0 ? v.tree : null;
+    out[id] = {
+      tree,
+      updatedAt: typeof v.updatedAt === 'string' ? v.updatedAt : null,
+      chosenSan: typeof v.chosenSan === 'string' ? v.chosenSan : null,
+      chosenUci: typeof v.chosenUci === 'string' ? v.chosenUci : null,
+      secondsSpent: Math.max(0, Math.floor(Number(v.secondsSpent)) || 0),
+      grade: normalizeGrade(v.grade),
+      touchedAt: Math.max(0, Math.floor(Number(v.touchedAt)) || 0),
+    };
+  }
+  return out;
+}
+
+/** Alle lokal gespeicherten Stellungen eines Buchs (leer, wenn nichts/kaputt/gesperrt). */
+export function readCalcLocal(bookId: number): CalcLocalEntries {
+  try {
+    const raw = localStorage.getItem(storageKey(bookId));
+    return raw ? sanitize(JSON.parse(raw)) : {};
+  } catch { return {}; }
+}
+
+/** Stand EINER Stellung; `null`, wenn es lokal nichts dazu gibt. */
+export function readCalcLocalEntry(bookId: number, bookPuzzleId: number): CalcLocalEntry | null {
+  return readCalcLocal(bookId)[String(bookPuzzleId)] ?? null;
+}
+
+/** Die drei Trainings-Werte einer Stellung (Standardwerte, wenn nichts gespeichert ist). */
+export function readCalcLocalReview(bookId: number, bookPuzzleId: number): CalcReview {
+  const entry = readCalcLocalEntry(bookId, bookPuzzleId);
+  if (!entry) return emptyReview();
+  return {
+    chosenSan: entry.chosenSan,
+    chosenUci: entry.chosenUci,
+    secondsSpent: entry.secondsSpent,
+    grade: entry.grade,
+  };
+}
+
+/** Trägt der Eintrag echte Arbeit (Baum, Festlegung, Zeit oder Bewertung)? Leere Zeilen dürfen
+ *  jederzeit verdrängt werden, echte nicht STILL. */
+function hasContent(e: CalcLocalEntry | undefined): boolean {
+  return !!e && (!!e.tree || !!e.chosenSan || !!e.chosenUci || !!e.secondsSpent || e.grade !== null);
+}
+
+/**
+ * Schreiben mit Deckel: erst die überzähligen (am längsten nicht angefassten) Stellungen
+ * verdrängen, dann speichern. Scheitert das Speichern trotzdem (Quota/gesperrt), wird noch
+ * einmal aggressiv halbiert — und danach aufgegeben.
+ *
+ * WICHTIG (Review-Fund 2026-08-09): würde der Routine-Deckel eine Stellung mit ECHTER Arbeit
+ * verdrängen (>150 bearbeitete Stellungen anonym), gäbe die Funktion früher trotzdem `true`
+ * zurück — die verdrängte Arbeit war nach dem Reload weg, ohne jedes Signal. Das verstößt gegen
+ * die Modus-Invariante „anonyme Arbeit geht nicht still verloren". Jetzt: in diesem Fall `false`
+ * zurückgeben, damit die Oberfläche wie bei vollem Speicher ehrlich „konnte nicht speichern"
+ * zeigt (Anmelden bringt Server-Speicher ohne Deckel). Der Quota-Notfallpfad (Halbieren) bleibt
+ * die letzte Rettung, wenn ohnehin schon nichts mehr geht.
+ */
+function persist(bookId: number, entries: CalcLocalEntries, keepId: string): boolean {
+  const ids = Object.keys(entries);
+  if (ids.length > CALC_LOCAL_MAX_POSITIONS) {
+    const wouldDrop = ids
+      .filter(id => id !== keepId)
+      .sort((a, b) => (entries[a].touchedAt || 0) - (entries[b].touchedAt || 0))
+      .slice(0, ids.length - CALC_LOCAL_MAX_POSITIONS);
+    if (wouldDrop.some(id => hasContent(entries[id]))) return false;
+  }
+  const trimmed = evict(entries, keepId, CALC_LOCAL_MAX_POSITIONS);
+  if (write(bookId, trimmed)) return true;
+  const halved = evict(trimmed, keepId, Math.max(1, Math.floor(Object.keys(trimmed).length / 2)));
+  return write(bookId, halved);
+}
+
+function write(bookId: number, entries: CalcLocalEntries): boolean {
+  try {
+    const store: CalcLocalStore = { v: 1, entries };
+    localStorage.setItem(storageKey(bookId), JSON.stringify(store));
+    return true;
+  } catch { return false; }
+}
+
+/** Auf `max` Einträge eindampfen; die gerade bearbeitete Stellung bleibt immer erhalten. */
+function evict(entries: CalcLocalEntries, keepId: string, max: number): CalcLocalEntries {
+  const ids = Object.keys(entries);
+  if (ids.length <= max) return entries;
+  const order = ids
+    .filter(id => id !== keepId)
+    .sort((a, b) => (entries[a].touchedAt || 0) - (entries[b].touchedAt || 0));
+  const out = { ...entries };
+  let over = ids.length - max;
+  for (const id of order) {
+    if (over <= 0) break;
+    delete out[id];
+    over--;
+  }
+  return out;
+}
+
+function touch(entries: CalcLocalEntries, id: string): CalcLocalEntry {
+  const entry = entries[id] ?? emptyEntry();
+  entry.touchedAt = Date.now();
+  entries[id] = entry;
+  return entry;
+}
+
+/**
+ * Baum ablegen. Antwort ist der Speicher-Zeitstempel (wie `treeUpdatedAt` beim Server) —
+ * `null`, wenn der Baum den Deckel sprengt oder der Speicher nicht mitspielt; die Oberfläche
+ * zeigt dann „nicht gespeichert" statt eine Lüge.
+ */
+export function writeCalcLocalTree(bookId: number, bookPuzzleId: number, treeJson: string): string | null {
+  if (!treeJson || treeJson.length > CALC_LOCAL_MAX_TREE_CHARS) return null;
+  const entries = readCalcLocal(bookId);
+  const id = String(bookPuzzleId);
+  const entry = touch(entries, id);
+  const updatedAt = new Date().toISOString();
+  entry.tree = treeJson;
+  entry.updatedAt = updatedAt;
+  return persist(bookId, entries, id) ? updatedAt : null;
+}
+
+/** Baum verwerfen; die Trainings-Werte bleiben stehen (wie beim Server-DELETE). */
+export function deleteCalcLocalTree(bookId: number, bookPuzzleId: number): boolean {
+  const entries = readCalcLocal(bookId);
+  const id = String(bookPuzzleId);
+  if (!entries[id]) return true;   // schon weg = Ziel erreicht
+  const entry = touch(entries, id);
+  entry.tree = null;
+  entry.updatedAt = null;
+  // Zeile ganz weg, wenn auch sonst nichts mehr dran hängt.
+  if (!entry.chosenSan && !entry.chosenUci && !entry.secondsSpent && entry.grade === null) delete entries[id];
+  // Rückgabe wie die übrigen Schreibwege: scheitert der Speicher, MUSS das gemeldet werden
+  // (sonst zeigt die Ansicht „verworfen", obwohl der Baum nach dem Neuladen wieder da ist).
+  return persist(bookId, entries, id);
+}
+
+/**
+ * Festlegung/Zeit/Stufe ändern — dieselbe Patch-Semantik wie beim Server (`secondsDelta` wird
+ * ADDIERT, fehlende Felder bleiben unverändert). Antwort ist der neue Stand, oder `null`, wenn der
+ * Speicher nicht mitspielte (Privatmodus, Quota) — dann steht der Wert NIRGENDS.
+ *
+ * Die Antwort MUSS ausgewertet werden (wie bei {@link writeCalcLocalTree}): wer den berechneten
+ * Stand zurückgibt, ohne auf `persist` zu schauen, meldet der Oberfläche einen Erfolg, den es nicht
+ * gab — Festlegung, Zeit und Bewertung stünden als „gespeichert" da und wären nach dem Neuladen weg.
+ */
+export function writeCalcLocalReview(bookId: number, bookPuzzleId: number, patch: CalcReviewPatch): CalcReview | null {
+  const entries = readCalcLocal(bookId);
+  const id = String(bookPuzzleId);
+  const entry = touch(entries, id);
+  const next = applyReviewPatch(
+    { chosenSan: entry.chosenSan, chosenUci: entry.chosenUci, secondsSpent: entry.secondsSpent, grade: entry.grade },
+    patch);
+  entry.chosenSan = next.chosenSan;
+  entry.chosenUci = next.chosenUci;
+  entry.secondsSpent = next.secondsSpent;
+  entry.grade = next.grade;
+  return persist(bookId, entries, id) ? next : null;
+}
+
+/** Alles Lokale dieses Buchs vergessen. */
+export function clearCalcLocal(bookId: number): void {
+  try { localStorage.removeItem(storageKey(bookId)); } catch { /* gesperrt → egal */ }
+}
+
+// ===== Weggeklickte Hinweise =================================================
+
+/**
+ * Präfix des Merkers „der Hinweis ‚liegt nur auf diesem Gerät' wurde weggeklickt" — je Kurs
+ * (`…_<bookId>`), damit die Auskunft in einem anderen Kurs wieder auftaucht.
+ *
+ * Gilt AUSDRÜCKLICH nur für den ruhigen Hinweis. Die WARNUNG, dass gerade gar nichts gespeichert
+ * werden kann (gesperrter/voller Speicher), darf hier nie landen: sie meldet Datenverlust und
+ * verschwindet höchstens für die laufende Sitzung (Feld in der Komponente, nicht hier).
+ */
+export const CALC_NOTICE_PREFIX = 'rookhub_calc_note_off_';
+
+function noticeKey(bookId: number): string {
+  return `${CALC_NOTICE_PREFIX}${bookId}`;
+}
+
+/** Wurde der Hinweis für diesen Kurs schon weggeklickt? (Gesperrter Speicher ⇒ „nein".) */
+export function readCalcNoticeDismissed(bookId: number): boolean {
+  try { return localStorage.getItem(noticeKey(bookId)) === '1'; } catch { return false; }
+}
+
+/** Merker setzen/löschen. Wie überall hier: ein gesperrter/voller Speicher darf NICHT werfen —
+ *  der Hinweis kommt dann eben beim nächsten Aufruf wieder, das ist der harmlose Ausgang. */
+export function writeCalcNoticeDismissed(bookId: number, dismissed = true): void {
+  try {
+    if (dismissed) localStorage.setItem(noticeKey(bookId), '1');
+    else localStorage.removeItem(noticeKey(bookId));
+  } catch { /* voll/gesperrt → Hinweis bleibt sichtbar */ }
+}

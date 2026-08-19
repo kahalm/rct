@@ -1,0 +1,238 @@
+{
+  "app": {
+    "title": "Real Chess Training",
+    "language": "Sprache",
+    "logout": "Abmelden"
+  },
+  "trial": {
+    "title": "Real Chess Training — Trial",
+    "goal": "Das Ziel: Trainiere deine Entscheidungsfindung unter Druck.",
+    "process": {
+      "title": "Der Ablauf",
+      "timerHead": "Stelle einen 45-Minuten-Timer:",
+      "timer": "Starte die Uhr und beginne mit dem ersten Diagramm.",
+      "manageHead": "Teile dir die Zeit ein:",
+      "manage": "Manche Aufgaben verlangen tiefe Berechnung, andere schnellere praktische Entscheidungen.",
+      "commitHead": "Lege dich auf einen Zug fest:",
+      "commit": "Notiere genau EINE Lösung pro Stellung — exakt so, wie du sie in einer echten Partie spielen würdest.",
+      "stopHead": "Harter Schlussstrich:",
+      "stop": "Wenn der Timer klingelt, notiere die endgültige Entscheidung für deine aktuelle Stellung und höre sofort auf.",
+      "reviewHead": "Review:",
+      "review": "Mach eine echte Pause und schau danach das Breakdown-Video, um deinen Denkprozess zu überprüfen und aus jeder Stellung zu lernen."
+    },
+    "mindset": {
+      "title": "Die Haltung",
+      "struggleHead": "Nimm den Kampf an:",
+      "struggle": "Diese Tests sind absichtlich schwer; hin und wieder 0 Punkte sind völlig okay.",
+      "wallHead": "Durch die Wand:",
+      "wall": "Wenn der „Das kann ich nicht lösen“-Moment kommt, zwing dich, dich auf die am wenigsten schlechte Option festzulegen.",
+      "processHead": "Fokus auf den Prozess:",
+      "process": "Hör auf, das Ergebnis zu bewerten — analysiere stattdessen, WIE du entscheidest, wenn du feststeckst.",
+      "goodEnoughHead": "Gut genug statt perfekt:",
+      "goodEnough": "Dieses Training bildet echte Partien ab. Du musst nicht immer den Top-Engine-Zug finden — ein ordentlicher Zug zählt."
+    },
+    "goldenHead": "Die Goldene Regel:",
+    "golden": "Notiere jedes Mal genau EINE Entscheidung pro Stellung. Wir trainieren die Gewohnheit, unter Druck eine endgültige Entscheidung zu treffen — unabhängig davon, wie sicher du dir bist.",
+    "benefits": {
+      "title": "Dein Nutzen",
+      "confidence": "Mehr Selbstvertrauen bei schweren Aufgaben",
+      "time": "Zeitmanagement",
+      "tactics": "Taktiken ohne Hinweise erkennen",
+      "keyMoments": "Schlüsselmomente von „gut genug“-Stellungen unterscheiden",
+      "easier": "Partien fühlen sich leichter an — dein Training war härter als eine echte Partie!"
+    },
+    "start": "Trial starten",
+    "continue": "Trial fortsetzen",
+    "progress": "{{chosen}} von {{total}} Stellungen festgelegt",
+    "points": "{{points}} / {{max}} Punkte",
+    "loadFailed": "Das Trial konnte nicht geladen werden.",
+    "review": {
+      "title": "Review",
+      "later": "Arbeite zuerst alle sechs Stellungen durch — danach prüfst du dein Denken mit dem Breakdown-Video.",
+      "ready": "Alle Stellungen festgelegt — Zeit für das Breakdown-Video.",
+      "watch": "Breakdown-Video ansehen"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Anmelden",
+      "usernameLabel": "Benutzername",
+      "passwordLabel": "Passwort",
+      "submit": "Anmelden",
+      "submitting": "Anmeldung läuft...",
+      "registerLink": "Noch kein Konto? Registrieren",
+      "failed": "Anmeldung fehlgeschlagen",
+      "required": "Bitte logge dich ein oder registriere dich, um fortzufahren."
+    },
+    "register": {
+      "title": "Registrieren",
+      "usernameLabel": "Benutzername",
+      "emailLabel": "E-Mail",
+      "passwordLabel": "Passwort",
+      "passwordHint": "Mindestens 8 Zeichen.",
+      "submit": "Registrieren",
+      "submitting": "Registrierung läuft...",
+      "loginLink": "Bereits ein Konto? Anmelden",
+      "failed": "Registrierung fehlgeschlagen",
+      "emailHint": "Pflichtfeld — für dein Konto und wichtige Mitteilungen."
+    }
+  },
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "downloadPgn": "PGN herunterladen",
+    "fullscreen": "Brett im Vollbild",
+    "fullscreenExit": "Vollbild verlassen (Esc)",
+    "downloadFailed": "Download fehlgeschlagen.",
+    "add": "Hinzufügen",
+    "close": "Schließen",
+    "search": "Suchen",
+    "clear": "Leeren",
+    "back": "Zurück",
+    "retry": "Wiederholen",
+    "loading": "Wird geladen…",
+    "ok": "OK",
+    "remove": "Entfernen",
+    "whiteToMove": "Weiß am Zug",
+    "blackToMove": "Schwarz am Zug",
+    "copy": "Kopieren",
+    "error": "Da ist etwas schiefgelaufen."
+  },
+  "calc": {
+    "annotate": "Bewertung",
+    "clearAnnotations": "Bewertungen entfernen",
+    "comment": "Kommentar",
+    "commentPlaceholder": "Kommentar…",
+    "deleteFromCursor": "Zug zurück",
+    "deleteLine": "Linie löschen",
+    "doneCount": "{{done}} von {{total}} bearbeitet",
+    "emptyBook": "Dieses Buch enthält noch keine Stellungen.",
+    "eval": {
+      "equal": "Ausgeglichen",
+      "whiteSlight": "Weiß steht etwas besser",
+      "blackSlight": "Schwarz steht etwas besser",
+      "whiteClear": "Weiß steht klar besser",
+      "blackClear": "Schwarz steht klar besser",
+      "whiteWinning": "Weiß gewinnt",
+      "blackWinning": "Schwarz gewinnt",
+      "unclear": "Unklare Stellung",
+      "compensation": "Kompensation für das Material",
+      "attack": "Mit Angriff",
+      "initiative": "Mit Initiative",
+      "counterplay": "Mit Gegenspiel",
+      "zugzwang": "Zugzwang"
+    },
+    "flip": "Brett drehen",
+    "frozen": "Brett eingefroren",
+    "frozenHint": "Das Brett zeigt immer nur die Ausgangsstellung. Deine Klicks werden als Züge erfasst, aber nie am Brett ausgeführt — gerechnet wird im Kopf.",
+    "glyph": {
+      "brilliant": "Glanzzug",
+      "good": "Guter Zug",
+      "interesting": "Interessanter Zug",
+      "dubious": "Zweifelhafter Zug",
+      "mistake": "Fehler",
+      "blunder": "Grober Fehler"
+    },
+    "symbolToggleHint": "nochmal klicken = entfernen",
+    "timer": {
+      "start": "Training starten",
+      "hint": "Kumulierte Rechenzeit in diesem Kapitel. Sie läuft nur bei gestartetem Training.",
+      "stop": "Training stoppen",
+      "running": "Training läuft — die Zeit wird gemessen",
+      "stopped": "Training gestoppt — es wird keine Zeit gemessen",
+      "unavailable": "Training lässt sich erst starten, wenn eine Stellung geladen ist.",
+      "notRunning": "Das Training läuft nicht — diese Zeit wird nicht gemessen.",
+      "editTitle": "Kapitelzeit anpassen",
+      "editFor": "Kapitel: {{chapter}}",
+      "editHint": "Zum Anpassen klicken",
+      "hours": "Stunden",
+      "minutes": "Minuten",
+      "seconds": "Sekunden",
+      "editNote": "Das ist die Kapitel-Uhr — eine Merkhilfe auf diesem Gerät. Die je Stellung gemessene Rechenzeit bleibt unangetastet: sie stammt aus echter Messung."
+    },
+    "illegalPosition": "Dieses Diagramm ist keine legale Schachstellung — hier lassen sich keine Züge eingeben.",
+    "jumpTo": "Zu Stellung springen",
+    "keyboardHint": "← / → bewegt innerhalb der Linie, ↑ / ↓ wechselt die Linie. Für eine Abzweigung einen Zug mitten in der Linie auswählen und einen anderen Zug spielen.",
+    "lines": "Meine Linien",
+    "loadFailed": "Das Kalkulationsbuch konnte nicht geladen werden.",
+    "newLine": "Neue Linie ab der Ausgangsstellung",
+    "nextPosition": "Nächste Stellung",
+    "noLines": "Noch keine Linie — klick einen Zug am Brett, um eine anzulegen.",
+    "notSavedYet": "Noch nicht gespeichert",
+    "prevPosition": "Vorherige Stellung",
+    "review": {
+      "chapterScore": "{{score}} Pkt",
+      "chapterSummary": "{{score}} Pkt · {{time}}",
+      "choiceHint": "Der erste Zug, auf den du dich festgelegt hast.",
+      "choose": "Als meine Wahl markieren",
+      "chooseHint": "Auf diesen ersten Zug festlegen (nochmal klicken = zurücknehmen). Genau eine Wahl je Stellung.",
+      "grade": {
+        "moveNoMainLine": "Richtiger Zug, aber Fehler in der Hauptvariante",
+        "moveNoSideLines": "Richtiger Zug, aber Fehler in den Nebenvarianten",
+        "notSolved": "Nicht gelöst",
+        "solved": "Gelöst — Haupt- und Nebenvarianten",
+        "someIdeas": "Ideen gesehen, aber nicht den Zug"
+      },
+      "gradeShort": {
+        "moveNoMainLine": "Zug, Hauptvariante daneben",
+        "moveNoSideLines": "Zug, Nebenvarianten daneben",
+        "notSolved": "nicht gelöst",
+        "solved": "gelöst",
+        "someIdeas": "Ideen gesehen"
+      },
+      "noChoice": "Noch nicht festgelegt",
+      "saveFailed": "Wahl, Zeit und Bewertung konnten nicht gespeichert werden.",
+      "selfRatingHint": "Prüf die Lösung im Buch und wähl dann deine Stufe — der Kalkulations-Modus zeigt keine Lösung.",
+      "timeHint": "Aktive Rechenzeit an dieser Stellung (pausiert, wenn der Tab im Hintergrund liegt).",
+      "totalPointsChapterHint": "Punkte dieses KAPITELS aus deiner Selbstbewertung, mit der erreichbaren Höchstzahl — die Liste zeigt nur dieses Kapitel.",
+      "result": "Ergebnis",
+      "resultHint": "Stellung selbst bewerten (öffnet die Stufen).",
+      "bookPoints": "Ganzes Buch: {{score}} Pkt",
+      "dialog": {
+        "choice": "Du hattest dich auf {{move}} festgelegt.",
+        "clear": "Bewertung zurücknehmen",
+        "noChoice": "Du hast dich auf keinen Zug festgelegt.",
+        "title": "Dein Ergebnis"
+      },
+      "positionTime": "Stellung"
+    },
+    "saveFailed": "Deine Linien konnten nicht gespeichert werden.",
+    "savedAt": "Gespeichert {{time}}",
+    "saving": "Speichere…",
+    "local": {
+      "notice": "Nicht angemeldet: Linien, Festlegung, Zeit und Bewertung bleiben nur auf diesem Gerät.",
+      "unavailable": "Auf diesem Gerät kann gerade GAR NICHTS gespeichert werden (privates Fenster oder Speicher voll): Linien, Festlegung, Zeit und Bewertung sind nach dem Neuladen weg.",
+      "signIn": "Anmelden zum Speichern",
+      "dismiss": "Hinweis ausblenden",
+      "hideForNow": "Vorerst ausblenden (kommt beim nächsten Fehlschlag wieder)"
+    },
+    "chapter": {
+      "done": "Kapitel „{{chapter}}\" durchgearbeitet.",
+      "label": "Kapitel",
+      "lastDone": "Das war das letzte Kapitel des Kurses.",
+      "next": "Nächstes Kapitel: {{chapter}}"
+    },
+    "keyboardHelp": "Tastenkürzel",
+    "settings": {
+      "title": "Brett-Einstellungen"
+    },
+    "copyFen": "FEN kopieren",
+    "fenCopied": "FEN kopiert",
+    "analyzeLine": "Diese Linie analysieren",
+    "analyze": {
+      "open": "Analyse",
+      "hint": "Deine Linie mit der Engine prüfen"
+    }
+  },
+  "courses": {
+    "noChapter": "(ohne Kapitel)"
+  },
+  "puzzles": {
+    "theme": {
+      "boardTheme": "Brett-Design",
+      "pieces": "Figuren"
+    }
+  }
+}

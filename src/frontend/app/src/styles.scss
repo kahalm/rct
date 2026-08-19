@@ -1,0 +1,253 @@
+
+// Custom Theming for Angular Material
+// For more information: https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+html.dark-theme {
+  color-scheme: dark;
+  @include mat.theme((
+    color: (
+      theme-type: dark,
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+  ));
+}/* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Chessground board styles */
+@import 'chessground/assets/chessground.base.css';
+@import 'chessground/assets/chessground.brown.css';
+@import 'chessground/assets/chessground.cburnett.css';
+
+/* Coord-Positioning override (Lichess-/Symmetrie-Style):
+   Default chessground rendert ranks bei top: -20px und files unterhalb des Bretts
+   horizontal zentriert. Wir wollen beide INNERHALB der Eck-Squares: Ziffern oben-
+   links der ersten Spalte, Buchstaben unten-rechts der letzten Reihe. !important
+   gegen die Default-Regeln aus chessground.base.css. */
+.cg-wrap coords.ranks {
+  top: 0 !important;
+  left: 2px !important;
+  width: 14px !important;
+}
+.cg-wrap coords.ranks coord {
+  transform: translateY(8%) !important;
+}
+.cg-wrap coords.files {
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 14px !important;
+  text-align: right !important;
+}
+.cg-wrap coords.files coord {
+  padding-right: 3px;
+}
+
+/* Board theme overrides — 2x2 checkerboard SVG tiled 4x4 = 8x8 board */
+.board-theme-blue cg-board {
+  background-color: #d4e3ed;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2' shape-rendering='crispEdges'%3E%3Crect width='2' height='2' fill='%23d4e3ed'/%3E%3Crect x='1' width='1' height='1' fill='%235882a1'/%3E%3Crect y='1' width='1' height='1' fill='%235882a1'/%3E%3C/svg%3E");
+  background-size: 25% 25%;
+}
+.board-theme-green cg-board {
+  background-color: #eeeed2;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2' shape-rendering='crispEdges'%3E%3Crect width='2' height='2' fill='%23eeeed2'/%3E%3Crect x='1' width='1' height='1' fill='%23769656'/%3E%3Crect y='1' width='1' height='1' fill='%23769656'/%3E%3C/svg%3E");
+  background-size: 25% 25%;
+}
+.board-theme-gray cg-board {
+  background-color: #f0f0f0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2' shape-rendering='crispEdges'%3E%3Crect width='2' height='2' fill='%23f0f0f0'/%3E%3Crect x='1' width='1' height='1' fill='%238a8a8a'/%3E%3Crect y='1' width='1' height='1' fill='%238a8a8a'/%3E%3C/svg%3E");
+  background-size: 25% 25%;
+}
+.board-theme-wood cg-board {
+  background-color: #e6d1a0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2' shape-rendering='crispEdges'%3E%3Crect width='2' height='2' fill='%23e6d1a0'/%3E%3Crect x='1' width='1' height='1' fill='%238b5e3c'/%3E%3Crect y='1' width='1' height='1' fill='%238b5e3c'/%3E%3C/svg%3E");
+  background-size: 25% 25%;
+}
+
+/* Coordinate label colors for non-brown themes */
+.board-theme-blue .orientation-white .ranks :nth-child(odd),
+.board-theme-blue .orientation-white .files :nth-child(even),
+.board-theme-blue .orientation-black .ranks :nth-child(even),
+.board-theme-blue .orientation-black .files :nth-child(odd) { color: rgba(40, 60, 80, 0.8); }
+.board-theme-blue .orientation-white .ranks :nth-child(even),
+.board-theme-blue .orientation-white .files :nth-child(odd),
+.board-theme-blue .orientation-black .ranks :nth-child(odd),
+.board-theme-blue .orientation-black .files :nth-child(even) { color: rgba(212, 227, 237, 0.9); }
+
+.board-theme-green .orientation-white .ranks :nth-child(odd),
+.board-theme-green .orientation-white .files :nth-child(even),
+.board-theme-green .orientation-black .ranks :nth-child(even),
+.board-theme-green .orientation-black .files :nth-child(odd) { color: rgba(50, 70, 30, 0.8); }
+.board-theme-green .orientation-white .ranks :nth-child(even),
+.board-theme-green .orientation-white .files :nth-child(odd),
+.board-theme-green .orientation-black .ranks :nth-child(odd),
+.board-theme-green .orientation-black .files :nth-child(even) { color: rgba(238, 238, 210, 0.9); }
+
+.board-theme-gray .orientation-white .ranks :nth-child(odd),
+.board-theme-gray .orientation-white .files :nth-child(even),
+.board-theme-gray .orientation-black .ranks :nth-child(even),
+.board-theme-gray .orientation-black .files :nth-child(odd) { color: rgba(60, 60, 60, 0.8); }
+.board-theme-gray .orientation-white .ranks :nth-child(even),
+.board-theme-gray .orientation-white .files :nth-child(odd),
+.board-theme-gray .orientation-black .ranks :nth-child(odd),
+.board-theme-gray .orientation-black .files :nth-child(even) { color: rgba(240, 240, 240, 0.9); }
+
+.board-theme-wood .orientation-white .ranks :nth-child(odd),
+.board-theme-wood .orientation-white .files :nth-child(even),
+.board-theme-wood .orientation-black .ranks :nth-child(even),
+.board-theme-wood .orientation-black .files :nth-child(odd) { color: rgba(70, 40, 15, 0.8); }
+.board-theme-wood .orientation-white .ranks :nth-child(even),
+.board-theme-wood .orientation-white .files :nth-child(odd),
+.board-theme-wood .orientation-black .ranks :nth-child(odd),
+.board-theme-wood .orientation-black .files :nth-child(even) { color: rgba(230, 209, 160, 0.9); }
+
+/* === Figuren-Sets (lokal gevendort: public/piece/<set>/, Lichess) ========= */
+/* Default = cburnett (chessground.cburnett.css). Andere Sets via Wrapper-Klasse
+   .piece-set-<name>; höhere Spezifität als die cburnett-Regeln (.cg-wrap piece…). */
+$rh-piece-sets: merida, fantasy, spatial, celtic, chessnut, rhosgfx;
+$rh-piece-roles: (pawn: 'P', knight: 'N', bishop: 'B', rook: 'R', queen: 'Q', king: 'K');
+@each $set in $rh-piece-sets {
+  @each $role, $code in $rh-piece-roles {
+    .piece-set-#{$set} cg-board piece.#{$role}.white { background-image: url('/piece/#{$set}/w#{$code}.svg'); }
+    .piece-set-#{$set} cg-board piece.#{$role}.black { background-image: url('/piece/#{$set}/b#{$code}.svg'); }
+  }
+}
+
+/* === Brett-Texturen (lokal gevendort: public/board/, Lichess AGPL) ========= */
+.board-theme-realwood cg-board { background-image: url('/board/wood4.jpg'); background-size: cover; background-repeat: no-repeat; background-color: #b58863; }
+.board-theme-water    cg-board { background-image: url('/board/blue3.jpg'); background-size: cover; background-repeat: no-repeat; background-color: #6f93b8; }
+.board-theme-marble   cg-board { background-image: url('/board/marble.jpg'); background-size: cover; background-repeat: no-repeat; background-color: #c9c9c9; }
+.board-theme-metal    cg-board { background-image: url('/board/metal.jpg'); background-size: cover; background-repeat: no-repeat; background-color: #8a8a8a; }
+.board-theme-leather  cg-board { background-image: url('/board/leather.jpg'); background-size: cover; background-repeat: no-repeat; background-color: #6b4f33; }
+.board-theme-maple    cg-board { background-image: url('/board/maple.jpg'); background-size: cover; background-repeat: no-repeat; background-color: #d8b98a; }
+/* Koordinaten auf Textur-Brettern: hell mit Schatten (auf jedem Feld lesbar) */
+.board-theme-realwood .ranks :nth-child(n), .board-theme-realwood .files :nth-child(n),
+.board-theme-water .ranks :nth-child(n), .board-theme-water .files :nth-child(n),
+.board-theme-marble .ranks :nth-child(n), .board-theme-marble .files :nth-child(n),
+.board-theme-metal .ranks :nth-child(n), .board-theme-metal .files :nth-child(n),
+.board-theme-leather .ranks :nth-child(n), .board-theme-leather .files :nth-child(n),
+.board-theme-maple .ranks :nth-child(n), .board-theme-maple .files :nth-child(n) {
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+/* PGN Viewer dialog: no padding */
+.pgn-viewer-dialog .mat-mdc-dialog-container .mdc-dialog__surface {
+  padding: 0;
+}
+
+/* PGN Viewer dialog: full-screen on mobile so board-wrap reaches screen edges */
+@media (max-width: 768px) {
+  .pgn-viewer-dialog.mat-mdc-dialog-panel {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+  .pgn-viewer-dialog .mat-mdc-dialog-container {
+    border-radius: 0 !important;
+  }
+}
+
+/* In die Brett-Vollbild-Hülle projizierte Elemente (siehe PuzzleBoardComponent <ng-content>):
+   außerhalb des Vollbilds unsichtbar, im Vollbild eingeblendet. Global, weil der :fullscreen-
+   Vorfahre und das projizierte Element aus verschiedenen Komponenten stammen (View-Encapsulation
+   würde den Selektor sonst zerlegen). */
+[data-fs-only] { display: none !important; }
+.board-fs-host:fullscreen [data-fs-only] { display: flex !important; }
+
+/* Druck: App-Chrome nie mitdrucken (relevant v. a. für die Flashcards-Druckvorlage). */
+@media print {
+  app-navbar, .app-footer, .app-fs-exit { display: none !important; }
+  main { margin: 0 !important; padding: 0 !important; }
+}
+
+/* UI-Welle 3: EINE Seitenbreite für alle Inhaltsseiten (statt page-individueller 1400px/96vw-
+   Werte). Seiten binden ihren Container an var(--page-max-width) — zentriert, ruhige Ränder
+   statt randloser Fläche mit toter Info-Spalte (gemessen 1440x900). */
+:root { --page-max-width: 1240px; }
+
+/* Hilfe-Icon-Tooltips (HelpHintComponent): mehrzeilige Erklärtexte lesbar halten. */
+.hh-tooltip .mdc-tooltip__surface {
+  white-space: pre-line;
+  max-width: 320px;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+/* ===== Kalkulations-Modus: Kopfzeile der App rückt nach rechts =====
+   Das Brett ist quadratisch — jede Zeile über ihm kostet Kantenlänge in BEIDE Richtungen. In
+   diesem Modus teilen sich App-Navigation und die Befehlszeile der Seite deshalb eine Zeile:
+   die Navigation legt sich oben rechts hin, die Seite beginnt bei 0.
+
+   Gesteuert über eine Klasse am <body>, die NUR die Kalkulations-Route setzt (Vorbild:
+   `app-fullscreen` am App-Host). `<app-navbar>` steht genau einmal in der App-Hülle und ist damit
+   auf allen Routen dieselbe Instanz — ohne diese Eingrenzung würde jede Seite umgebaut.
+
+   Erst ab 900px: darunter liegt die Seite ohnehin einspaltig, und eine schwebende Navigation
+   würde dort den Inhalt überdecken statt Platz zu schaffen. */
+@media (min-width: 900px) {
+  /* Oben rechts, aber AUF der Befehlszeile: dieselbe Einrückung wie das Seitenpolster
+     (`.calc-page` hat 0.75rem) und dieselbe Höhe wie die Zeile. Klebte die Leiste am
+     Fensterrand, während die Seite gedeckelt und zentriert ist, lägen die Symbole auf einem
+     breiten Schirm NEBEN der Zeile statt darauf. */
+  body.calc-mode app-navbar {
+    position: fixed;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 900;
+    width: auto;
+  }
+
+  body.calc-mode app-navbar mat-toolbar {
+    width: auto;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 4px;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* Die Marke steht auf jeder anderen Seite — hier führt der Pfeil der Befehlszeile zurück. */
+  body.calc-mode app-navbar .logo,
+  body.calc-mode app-navbar .spacer { display: none; }
+
+  body.calc-mode main { padding-top: 0; }
+
+  /* Fußzeile in die rechte Spalte, ganz unten: sie ist Auskunft (Version, Hilfe, Feedback) und
+     kostete unter dem Brett eine ganze Zeile Höhe. Aus dem Fluss genommen kostet sie keine. */
+  body.calc-mode .app-footer {
+    position: fixed;
+    right: 0.9rem;
+    bottom: 0.4rem;
+    margin: 0;
+    /* Mit Grund und Polster: sie liegt ÜBER der Seitenspalte — ohne Hintergrund schob sich beim
+       Scrollen Spaltentext unter die Fußzeilen-Links (Text auf Text). */
+    padding: 1px 8px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--mat-sys-surface, #1e1e1e) 92%, transparent);
+    text-align: right;
+    z-index: 5;
+  }
+
+  /* Der brett-eigene Vollbild-Knopf: außerhalb des Vollbilds unsichtbar (seine Zeile über dem
+     Brett kostete Höhe — dafür gibt es die Leiste), IM Vollbild aber der einzige erreichbare
+     Ausstieg: nur er sitzt INNERHALB der Vollbild-Hülle, alles außerhalb liegt unter dem
+     ::backdrop. Ohne ihn gäbe es auf Touch-Geräten keinen Weg zurück außer Esc. */
+  body.calc-mode app-puzzle-board app-board-fullscreen-button { display: none; }
+  body.calc-mode app-puzzle-board .board-fs-host:fullscreen app-board-fullscreen-button { display: flex; }
+}

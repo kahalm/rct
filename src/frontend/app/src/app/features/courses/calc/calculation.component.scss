@@ -1,0 +1,674 @@
+.calc-page {
+  padding: 0.75rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Befehlszeile: Buch · Kapitel · Stellung · Kapitel-Uhr · Kapitelstand in EINER Zeile.
+   Sie klebt bewusst NICHT oben fest (`position: sticky`) — im Kalkulations-Modus ist die HÖHE
+   das knappe Gut, weil das Brett quadratisch ist und mit ihr wächst. */
+.calc-bar {
+  display: flex;
+  align-items: center;
+  /* Gleiche Höhe wie die App-Kopfzeile im Modus (`styles.scss`) — sonst liegen die Symbole
+     rechts ein paar Pixel höher als der Rest der Zeile. */
+  min-height: 40px;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+  /* SENKRECHT kein Polster: die Knöpfe (40px) geben die Höhe vor, und der Höhen-Abzug der
+     Brettformel rechnet mit exakt dieser Zeile. 4.8px Eigen-Polster machten die Rechnung um
+     0.8px falsch — genug für einen permanenten senkrechten Rollbalken. */
+  padding: 0 0.35rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+}
+
+/* Turm der App als Weg zurück — dasselbe Zeichen wie das Symbol auf dem Handy. */
+.calc-home {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.2rem;
+  border-radius: 6px;
+  line-height: 0;
+
+  img { display: block; border-radius: 5px; }
+  &:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+}
+
+.calc-bar-book {
+  font-weight: 600;
+  padding: 0 0.35rem;
+  white-space: nowrap;
+}
+
+/* Kapitel- und Stellungs-Auswahl sehen gleich aus — beide sind Menüs, nicht Formularfelder:
+   ein `mat-form-field` brächte Rahmen, Label und Fußzeile in eine Zeile, die davon lebt,
+   flach zu sein. */
+.calc-bar-pick {
+  min-width: 0;
+  padding: 0 0.35rem;
+
+  .calc-bar-pick-text {
+    display: inline-block;
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+}
+
+.calc-bar-caret { margin-left: -2px; opacity: 0.7; }
+
+.calc-bar-count { font-variant-numeric: tabular-nums; }
+
+.calc-bar-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* Kapitelstand. Die Buchsumme steht im Tooltip (`pointsTooltip`) statt als eigene Zeile. */
+.calc-bar-points {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 0 0.4rem;
+  white-space: nowrap;
+}
+
+/* ד am Hinweis: klein und rechts, damit es die Zeile nicht dominiert. */
+.calc-note-close {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon { font-size: 17px; width: 17px; height: 17px; }
+}
+
+/* „Nur auf diesem Gerät"-Hinweis für nicht angemeldete Nutzer. Bewusst eine ruhige Zeile:
+   kein Dialog, keine Farbe, die nach Fehler aussieht — es ist eine Auskunft, keine Warnung. */
+.calc-local-note {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0 0 0.6rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  background: rgba(128, 128, 128, 0.12);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    opacity: 0.8;
+  }
+}
+
+/* Ausnahme von der Ruhe oben: konnte GAR NICHT gespeichert werden (Privatmodus, Quota voll),
+   ist es eben doch ein Fehler — und der darf nicht wie eine Auskunft aussehen. */
+.calc-local-note--failed {
+  opacity: 1;
+  background: rgba(211, 47, 47, 0.14);
+  color: var(--mat-sys-error, #d32f2f);
+
+  mat-icon { opacity: 1; }
+}
+
+.calc-local-text { flex: 1 1 12rem; }
+
+.calc-loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.calc-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 520px) minmax(280px, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 899.98px) {
+  .calc-layout { grid-template-columns: 1fr; }
+
+  /* Schmal soll das × neben dem Anmelde-Link stehen und nicht auf einer eigenen Zeile darunter. */
+  .calc-local-note { flex-wrap: nowrap; }
+  .calc-local-text { flex: 1 1 auto; min-width: 0; }
+}
+
+/* Ab hier steht die App-Kopfzeile rechts (Modus-Klasse) und über dem Brett nur die Befehlszeile.
+   Die gewonnene Höhe nützt aber nur, wenn sich das Brett auch DARAN bemisst: vorher hing seine
+   Kante allein an der Spaltenbreite (Deckel 520px), also blieb es gleich groß, egal wieviel Platz
+   darüber frei wurde. Jetzt nimmt es, was Höhe UND Breite hergeben — dieselbe Rechnung wie im
+   App-Vollbild, nur mit Abzug für Befehlszeile, Seitenränder und Fußzeile. */
+@media (min-width: 900px) {
+  /* Rechts bleibt genau so viel frei, wie die App-Kopfzeile misst (`--calc-nav-w`, von der
+     Komponente gesetzt) — aber NUR hier: unterhalb dieser Breite steht die Kopfzeile normal im
+     Fluss, und die reservierte Lücke schob die Zeile aus dem Fenster (Querbalken). */
+  .calc-bar { padding-right: calc(var(--calc-nav-w, 0px) + 0.5rem); }
+
+  /* Die fixe Fußzeile (unten rechts, styles.scss) liegt ÜBER der Seitenspalte — ohne diesen
+     Freiraum schöbe sich beim Scrollen Text unter Text, und am Seitenende fing sie die Klicks
+     auf Anmelde-Link und ד des Hinweises ab. */
+  .calc-side-col { padding-bottom: 2rem; }
+
+  /* Kein Breiten-Deckel in diesem Modus: die App-Kopfzeile sitzt am rechten FENSTERrand, und
+     eine auf 1400px gedeckelte, zentrierte Seite endete auf einem breiten Schirm weit davor —
+     die Symbole lägen dann neben der Befehlszeile statt auf ihr. Das Brett bemisst sich ohnehin
+     an der Höhe, die Seitenspalte bekommt einen eigenen Deckel. */
+  .calc-page { max-width: none; }
+
+  /* Der Spalt trägt jetzt den Vollbild-Knopf des Bretts (Regel in `styles.scss`) — er braucht
+     etwas mehr als die üblichen 1rem. */
+  .calc-layout {
+    grid-template-columns: auto auto minmax(320px, 980px);
+    gap: 0.6rem;
+  }
+
+  /* Abzug von der Fensterhöhe: Seitenpolster oben und unten (2 × 0.75rem), die Befehlszeile
+     (40px) und ihr Abstand zum Inhalt (0.5rem). Zeile über dem Brett und Fußzeile darunter gibt
+     es nicht mehr — genau das macht den Unterschied zu vorher. */
+  .calc-board-col { width: min(calc(100vh - 4.75rem), calc(100vw - 480px)); }
+}
+
+/* Im Band bis ~1450px kann die Befehlszeile zweizeilig werden (anonym reserviert die
+   App-Kopfzeile mit Login/Registrieren 400–500px): dann braucht sie eine Zeilenhöhe mehr,
+   sonst schiebt das Brett die Seite genau darum aus dem Fenster (gemessen bei 1366×768).
+   Bricht sie dort nicht um, ist das Brett ein paar Pixel kleiner als möglich — der billigere
+   der beiden Fehler. */
+@media (min-width: 900px) and (max-width: 1449.98px) {
+  .calc-board-col { width: min(calc(100vh - 7.25rem), calc(100vw - 480px)); }
+}
+
+.calc-board-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.calc-board-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* „Eingefroren" ist eine Eigenschaft des MODUS und ändert sich nie — als Dauertext war das
+   Grundrauschen. Als Symbol mit Erklärung sagt es dasselbe und nimmt eine Ecke statt einer Zeile. */
+.calc-frozen {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #e3f2fd;
+  color: #1565c0;
+  white-space: nowrap;
+  cursor: help;
+
+  mat-icon { font-size: 15px; width: 15px; height: 15px; }
+}
+
+.calc-turn { font-size: 0.85rem; opacity: 0.8; }
+.calc-spacer { flex: 1; }
+
+.calc-board-wrap { width: 100%; }
+
+.calc-warn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  font-size: 0.82rem;
+  color: #e65100;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+/* Schmale Leiste zwischen Brett und Seitenspalte: Vollbild oben, Einstellungen darunter. */
+.calc-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding-top: 2px;
+}
+
+.calc-rail-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+
+  mat-icon { font-size: 19px; width: 19px; height: 19px; }
+  &:hover, &:focus-visible { opacity: 1; }
+}
+
+.calc-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.calc-board-col { min-width: 0; }
+
+/* Die Befehlszeile in der Seitenspalte gibt es nur im App-Vollbild. */
+.calc-bar--side { display: none; }
+
+/* Der Aufgabentext hat keine eigene Karte mehr — er steht, wenn es einen gibt, als schlichte
+   Zeile über den Linien. Fehlt er, steht dort nichts (statt „Kein Kommentar zu dieser Stellung"). */
+.calc-task-text {
+  margin: 0 0 0.5rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Werkzeuge in der Kopfzeile der Linienliste statt als eigene Knopfreihe darunter. */
+.calc-head-tools {
+  display: inline-flex;
+  align-items: center;
+}
+
+.calc-keys-on { color: var(--mat-sys-primary, #1565c0); }
+
+.calc-keys {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  color: color-mix(in srgb, currentColor 50%, transparent);
+}
+
+.calc-annotate-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.calc-annotate-target {
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: #1976d2;
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.calc-symbols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 0.3rem;
+}
+
+.calc-sym {
+  min-width: 2.1rem;
+  padding: 0.25rem 0.4rem;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.2;
+  cursor: pointer;
+
+  &:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; vertical-align: middle; }
+}
+
+.calc-sym--on {
+  background: #1976d2;
+  border-color: #1976d2;
+  color: #fff;
+  font-weight: 700;
+}
+
+.calc-comment-row {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+  margin-top: 0.35rem;
+
+  input {
+    flex: 1;
+    min-width: 6rem;
+    padding: 5px 7px;
+    border-radius: 4px;
+    border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+  }
+}
+
+.calc-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, currentColor 50%, transparent);
+}
+
+/* Fußzeile: Bearbeitungs- und Speicherstand. Auskunft, keine Bedienung — deshalb ruhig, klein
+   und ganz unten. */
+.calc-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: 0.78rem;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.calc-done {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+/* ===== Kapitelende ===== */
+.calc-chapter-done {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, #2e7d32 12%, transparent);
+  font-size: 0.85rem;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; color: #2e7d32; }
+}
+
+.calc-chapter-done-text { flex: 1 1 10rem; font-weight: 600; }
+/* Nur der WEG ins nächste Kapitel, ohne die Behauptung „durch": dieselbe Zeile, aber ohne die
+   Erledigt-Färbung — Grün ist hier eine Aussage und keine Dekoration. */
+.calc-chapter-done--onward {
+  background: color-mix(in srgb, currentColor 7%, transparent);
+}
+
+/* Der Knopf „Ergebnis": eine Aktion statt fünf Schaltern (UI-Dichte-Regel). */
+.calc-result-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.calc-result-btn--set {
+  color: #f57f17;
+  font-weight: 600;
+}
+
+.calc-result-label {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===== Festlegung · Rechenzeit · Selbstbewertung ===== */
+.calc-review-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.calc-review-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  color: color-mix(in srgb, currentColor 65%, transparent);
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+.calc-review-chip--set {
+  color: #f57f17;
+  font-weight: 600;
+}
+
+.calc-review-time,
+.calc-review-score { font-variant-numeric: tabular-nums; }
+
+/* Im Ergebnis-Knopf klebte die Punktzahl am Text („Gelöst4 / 4"). Das `gap` des Knopfes hilft
+   dort nicht: Material projiziert den Inhalt in EINEN `mdc-button__label`, die Lücke entsteht
+   also nur zwischen Icon und Label, nie zwischen zwei Spans DARIN. Angular entfernt den
+   Zeilenumbruch aus der Vorlage (preserveWhitespaces), es bleibt kein Leerzeichen übrig. */
+.calc-result-label + .calc-review-score { margin-left: 0.35rem; }
+
+/* Die fünf Stufen: eine Spalte von Schaltflächen, gewählt wird die BEDEUTUNG (die Punkte
+   stehen nur als kleine Zahl daneben). Kein Zahlenfeld — die Stufe ist die Eingabe. */
+.calc-grades {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.4rem;
+}
+
+.calc-grade {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+}
+
+.calc-grade--on {
+  border-color: #f9a825;
+  background: color-mix(in srgb, #f9a825 16%, transparent);
+  font-weight: 600;
+}
+
+.calc-grade-label { flex: 1; }
+
+.calc-grade-points {
+  flex: 0 0 auto;
+  min-width: 1.2rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+/* Zusatzangaben in der Sprungliste (Wahl · Zeit · Stufe/Punkte) */
+.calc-opt-meta {
+  margin-left: 0.4rem;
+  font-size: 0.78rem;
+  opacity: 0.75;
+
+  span + span { margin-left: 0.35rem; }
+}
+
+.calc-opt-choice { color: #f57f17; }
+.calc-opt-time { font-variant-numeric: tabular-nums; }
+.calc-opt-grade { font-style: italic; }
+.calc-opt-points { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ===== Kapitel-Timer ===== */
+.calc-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.calc-timer-icon { font-size: 18px; width: 18px; height: 18px; }
+
+/* Läuft das Training? Ohne Start misst NICHTS — der Unterschied muss ins Auge fallen. */
+.calc-timer { color: color-mix(in srgb, currentColor 50%, transparent); }
+.calc-timer--running { color: #2e7d32; }
+
+/* Vollbild-Variante: schwebt im schwarzen Balken neben dem Brett (Sichtbarkeit steuert die
+   globale [data-fs-only]-Regel in styles.scss; position: fixed greift, weil das Vollbild-
+   Element vom Browser als fixed-Containing-Block gesetzt wird). */
+.calc-fs-timer {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 70;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 1.3rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.calc-fs-timer .calc-timer-icon { font-size: 22px; width: 22px; height: 22px; }
+/* Im Vollbild ist der Balken schwarz — dort trägt der Laufzustand eine hellere Farbe. */
+.calc-fs-timer { color: rgba(255, 255, 255, 0.65); }
+.calc-fs-timer--running { color: #a5d6a7; }
+.calc-fs-timer-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+.calc-fs-timer-btn:hover, .calc-fs-timer-btn:focus-visible { background: rgba(255, 255, 255, 0.3); }
+
+/* ===== App-Vollbild-Layout =====
+   Aktiv, wenn die GANZE GUI im Vollbild ist (Host-Klasse `app-fullscreen` auf app-root,
+   siehe AppComponent) — Navbar + Fußzeile sind dann schon weg. Hier zusätzlich: eigener
+   Seitenkopf weg, Brett auf das größtmögliche Quadrat (Höhe = Viewport minus Brett-Kopfzeile,
+   Breite = Viewport minus Seitenspalte), Rest rechts daneben; die „Du bist hier"-Zugzeile
+   wechselt vom Brett in die Seitenspalte. Nur ab 900px — darunter bleibt die Einspalten-
+   Ansicht (dort gewinnt das Brett durch eine Seitenspalte nichts). */
+.calc-board-head--side { display: none; }
+
+@media (min-width: 900px) {
+  :host-context(.app-fullscreen) {
+    .calc-page { max-width: none; padding: 0.5rem; }
+    .calc-bar { display: none; }
+    /* DREI Spalten, seit die schmale Leiste dazugekommen ist: Brett | Leiste | Arbeitsfläche.
+       Mit nur zwei Angaben rutschte die dritte Spalte in eine neue Zeile — also unter das Brett,
+       wo sie weggescrollt werden musste. */
+    .calc-layout {
+      grid-template-columns: auto auto minmax(300px, 1fr);
+      gap: 0.5rem;
+    }
+    /* Über/unter dem Brett steht im Vollbild NICHTS mehr (Kopfzeile + Zugzeile sind rechts) —
+       nur die Seitenränder (2×0.5rem) gehen von der Höhe ab. */
+    /* 370px statt der 340 aus der ZWEISPALTIGEN Zeit: neben dem Brett stehen jetzt
+       Seitenpolster (16) + zwei Lücken (16) + Leiste (30) + Spalten-Minimum (300) = 362px —
+       mit 340 lief das Grid auf 4:3-Schirmen 22px über (Querbalken im Vollbild). */
+    .calc-board-col { width: min(calc(100vh - 1rem), calc(100vw - 370px)); }
+    /* Oben ausgeblendet, hier sichtbar — sonst käme man im Vollbild zu keiner nächsten Stellung.
+       Rechts bleibt Platz frei: dort liegen die beiden aus dem Fluss genommenen Knöpfe des
+       Bretts (Vollbild verlassen + App-Vollbild), die sich sonst mit der Zeile überlagern. */
+    .calc-bar--side {
+      display: flex;
+      padding-right: 84px;
+      /* Klebt NUR hier — nicht auf der normalen Seite. Die Spalte rollt im Vollbild, und mit ihr
+         würde die Zeile davonrollen: dann wäre Weiter/Zurück wieder unerreichbar, also genau der
+         Fehler, den diese Zeile hier beheben soll. */
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--mat-sys-surface, #1e1e1e);
+    }
+    .calc-side-col {
+      max-height: calc(100vh - 1rem);
+      overflow-y: auto;
+      /* Waagrecht wird nicht gerollt: ein Balken quer über der Fußzeile ist schlimmer als ein
+         umbrechender Inhalt. `min-width: 0` oben lässt die Spalte ohnehin schrumpfen. */
+      overflow-x: hidden;
+    }
+  }
+}
+
+/* Werkzeug-Knöpfe in der Kopfzeile der Linienliste: „a" (Anmerkungen) und „?" (Tastenkürzel).
+   Eingeschaltet färben sie sich, damit man sieht, warum unten etwas steht. */
+.calc-tool-on { color: var(--mat-sys-primary, #1565c0); }
+
+/* Als nacktes Zeichen zwischen zwei Symbolen las sich das „a" wie verirrter Text. Der Ring gibt
+   ihm dieselbe Silhouette wie die Icons daneben; das GROSSE A füllt ihn gleichmäßig aus (das
+   kleine saß mit seiner Unterlänge sichtbar tief). */
+.calc-tool-letter {
+  /* `display: flex` statt `inline-flex` ist hier der ganze Punkt: ein INLINE-Kasten mit Text
+     darin wird an der GRUNDLINIE ausgerichtet — und die liegt beim „A" unten im Ring, weshalb
+     der ganze Ring gegenüber den Symbolen daneben nach unten rutschte. Als Block-Kasten füllt er
+     die Knopffläche aus und wird von ihr zentriert, ganz ohne Grundlinie. */
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.calc-tool-letter::before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+/* Die Uhr ist ein Knopf (Zeit nachtragen) — sie soll trotzdem wie Text aussehen. */
+.calc-timer-btn {
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  padding: 0 0.25rem;
+  cursor: pointer;
+  border-radius: 6px;
+
+  &:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+}
+
+/* Einspaltig liegt die Leiste QUER zwischen Brett und Arbeitsfläche. Dieser Block muss NACH der
+   .calc-rail-Basisregel stehen: gleiche Spezifität — stünde er davor, gewänne die spätere
+   Spalten-Basis überall, und auf dem Handy stünde eine Säule aus zwei Knöpfen (genau so war es
+   kaputt, der Block lag oben in der Datei). */
+@media (max-width: 899.98px) {
+  .calc-rail {
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 0;
+  }
+}

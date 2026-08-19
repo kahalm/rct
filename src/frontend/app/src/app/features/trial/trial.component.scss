@@ -1,0 +1,20 @@
+.trial-page { display: flex; justify-content: center; padding: 24px 12px 48px; }
+.trial-card { max-width: 760px; width: 100%; }
+.trial-title { font-size: 1.5rem; }
+.sec { display: flex; align-items: center; gap: 8px; margin: 20px 0 8px; font-size: 1.05rem; }
+.sec mat-icon { color: #f5a623; }
+.rules, .benefits { margin: 0; padding-left: 1.4rem; line-height: 1.7; }
+.golden {
+  margin: 20px 0 4px; padding: 10px 14px; border-radius: 8px;
+  background: color-mix(in srgb, #f5a623 14%, transparent);
+  border-left: 3px solid #f5a623;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.golden mat-icon { color: #f5a623; flex: none; }
+.trial-actions { display: flex; align-items: center; gap: 16px; padding: 16px; flex-wrap: wrap; }
+.start-btn { font-size: 1.05rem; padding: 0 20px; height: 44px; }
+.progress-line { opacity: 0.8; }
+.load-error { color: #e57373; margin: 0; }
+.review { padding: 4px 16px 16px; opacity: 0.75; }
+.review--ready { opacity: 1; }
+.review--ready .sec mat-icon { color: #66bb6a; }

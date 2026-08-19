@@ -1,0 +1,16 @@
+import { Routes } from '@angular/router';
+import { authGuard } from './core/auth.guard';
+
+export const routes: Routes = [
+  { path: 'login', loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent) },
+  { path: 'register', loadComponent: () => import('./features/auth/register.component').then(m => m.RegisterComponent) },
+  // Das eine Feature: die Trial-Seite (Guidelines + Start + Review-Video).
+  { path: 'trial', canActivate: [authGuard], loadComponent: () => import('./features/trial/trial.component').then(m => m.TrialComponent) },
+  // Der Kalkulations-Trainer (verbatim aus RookHub) läuft unter RookHubs Routen-Form
+  // /courses/:bookId/calc — so bleibt die Komponente unangetastet. Der „Zurück zu den
+  // Kursen"-Link der Komponente (/courses) landet auf der Trial-Seite.
+  { path: 'courses/:bookId/calc', canActivate: [authGuard], loadComponent: () => import('./features/courses/calc/calculation.component').then(m => m.CalculationComponent) },
+  { path: 'courses', redirectTo: 'trial' },
+  { path: '', redirectTo: 'trial', pathMatch: 'full' },
+  { path: '**', redirectTo: 'trial' },
+];
