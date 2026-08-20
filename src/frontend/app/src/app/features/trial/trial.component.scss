@@ -20,3 +20,13 @@
 .review--ready .sec mat-icon { color: #66bb6a; }
 
 .trial-page { flex-direction: column; align-items: center; gap: 16px; }
+
+/* ===== Startseiten-CTA: Produktseite (extern) + Trial-Start nebeneinander ===== */
+.trial-cta { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-top: 12px; }
+.cta-btn { height: 44px; font-size: 1.02rem; }
+.progress-line { margin: 10px 2px 0; opacity: 0.8; }
+.guidelines-hint {
+  display: flex; align-items: center; gap: 6px; margin: 14px 2px 0; font-size: 0.9rem; opacity: 0.8;
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  a { color: inherit; }
+}

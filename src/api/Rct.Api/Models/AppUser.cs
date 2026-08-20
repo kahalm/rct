@@ -28,6 +28,10 @@ public class AppUser
     /// Admins sehen immer alles.</summary>
     public bool CourseAccess { get; set; } = false;
 
+    /// <summary>Tester sehen terminierte Kapitel schon ab deren <c>TesterReleaseAt</c>
+    /// (<see cref="ChapterRelease"/>) — die Allgemeinheit erst ab <c>ReleaseAt</c>.</summary>
+    public bool IsTester { get; set; } = false;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>Gesetzt bei Löschung/Anonymisierung — solche Konten können sich nicht mehr einloggen.</summary>

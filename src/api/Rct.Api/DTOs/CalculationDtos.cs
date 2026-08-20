@@ -211,6 +211,29 @@ public class AddChapterDto
     public string Chapter { get; set; } = string.Empty;
     [System.ComponentModel.DataAnnotations.Required]
     public string FenList { get; set; } = string.Empty;
+    /// <summary>Freischaltung fuer die Allgemeinheit (UTC); null = nicht terminiert.</summary>
+    public DateTime? ReleaseAt { get; set; }
+    /// <summary>Fruehere Freischaltung fuer Tester (UTC); null = nicht terminiert.</summary>
+    public DateTime? TesterReleaseAt { get; set; }
+}
+
+/// <summary>Kapitel-Uebersicht fuers Admin-Authoring: Name, Umfang, Freischalt-Termine.</summary>
+public class ChapterInfoDto
+{
+    public string Chapter { get; set; } = string.Empty;
+    public int Positions { get; set; }
+    public DateTime? ReleaseAt { get; set; }
+    public DateTime? TesterReleaseAt { get; set; }
+}
+
+/// <summary>Freischalt-Termine eines Kapitels setzen (Admin). Beide null = Eintrag loeschen
+/// (Kapitel sofort fuer alle Freigeschalteten sichtbar).</summary>
+public class SetChapterReleaseDto
+{
+    [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MaxLength(200)]
+    public string Chapter { get; set; } = string.Empty;
+    public DateTime? ReleaseAt { get; set; }
+    public DateTime? TesterReleaseAt { get; set; }
 }
 
 /// <summary>Ergebnis des Kapitel-Authorings: angelegte Stellungen + nicht verwertbare Zeilen.</summary>

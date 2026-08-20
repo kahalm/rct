@@ -62,17 +62,35 @@ public class CalculationService
             throw new KeyNotFoundException("Book not found.");
     }
 
-    /// <summary>Kurs-Freischaltung des Users (Admins immer). Kapitel-Stellungen sind nur mit
-    /// Freischaltung sichtbar/beschreibbar; die kapitel-losen Trial-Stellungen immer.</summary>
-    private async Task<bool> HasCourseAccessAsync(int userId, bool isAdmin, CancellationToken ct)
-        => isAdmin || await _db.AppUsers.Where(u => u.Id == userId)
-            .Select(u => u.CourseAccess).FirstOrDefaultAsync(ct);
-
-    /// <summary>Wirft 404 (nichts leaken), wenn die Position ein Kapitel traegt und der User keine
-    /// Kurs-Freischaltung hat — deckt auch geratene IDs ab (IDOR).</summary>
-    private async Task EnsureChapterAccessAsync(int userId, bool isAdmin, string? chapter, CancellationToken ct)
+    /// <summary>Kurs-Freischaltung + Tester-Status des Users. Kapitel-Stellungen sind nur mit
+    /// Freischaltung sichtbar/beschreibbar (und ggf. erst ab ihrem Freischalt-Termin,
+    /// <see cref="ChapterRelease"/>); die kapitel-losen Trial-Stellungen sieht jeder.</summary>
+    private async Task<(bool HasCourse, bool IsTester)> GetCourseAccessAsync(int userId, CancellationToken ct)
     {
-        if (chapter != null && !await HasCourseAccessAsync(userId, isAdmin, ct))
+        var row = await _db.AppUsers.Where(u => u.Id == userId)
+            .Select(u => new { u.CourseAccess, u.IsTester }).FirstOrDefaultAsync(ct);
+        return (row?.CourseAccess ?? false, row?.IsTester ?? false);
+    }
+
+    /// <summary>Terminlogik eines Release-Eintrags: Allgemeinheit ab ReleaseAt, Tester schon ab
+    /// TesterReleaseAt; ein fehlender Eintrag (null) heisst „sofort frei".</summary>
+    private static bool IsChapterReleased(ChapterRelease? release, bool isTester, DateTime now)
+        => release == null
+           || (release.ReleaseAt != null && release.ReleaseAt <= now)
+           || (isTester && release.TesterReleaseAt != null && release.TesterReleaseAt <= now);
+
+    /// <summary>Wirft 404 (nichts leaken), wenn die Position ein Kapitel traegt und der User es
+    /// (noch) nicht sehen darf — fehlende Freischaltung ODER Termin in der Zukunft. Deckt auch
+    /// geratene IDs ab (IDOR).</summary>
+    private async Task EnsureChapterAccessAsync(int userId, bool isAdmin, int bookId, string? chapter, CancellationToken ct)
+    {
+        if (chapter == null || isAdmin) return;
+        var (hasCourse, isTester) = await GetCourseAccessAsync(userId, ct);
+        if (!hasCourse)
+            throw new KeyNotFoundException("Position not found.");
+        var release = await _db.ChapterReleases
+            .FirstOrDefaultAsync(r => r.BookId == bookId && r.Chapter == chapter, ct);
+        if (!IsChapterReleased(release, isTester, DateTime.UtcNow))
             throw new KeyNotFoundException("Position not found.");
     }
 
@@ -88,10 +106,17 @@ public class CalculationService
             .Select(b => new { b.Id, b.DisplayName, b.IsCalculation })
             .FirstAsync(ct);
 
-        // Ohne Kurs-Freischaltung nur die kapitel-losen Trial-Stellungen (Kapitel = der Kurs).
-        var hasCourse = await HasCourseAccessAsync(userId, isAdmin, ct);
+        // Ohne Kurs-Freischaltung nur die kapitel-losen Trial-Stellungen (Kapitel = der Kurs);
+        // terminierte Kapitel erst ab ihrem Freischalt-Termin (Tester frueher, Admins immer).
+        var (hasCourse, isTester) = isAdmin ? (true, true) : await GetCourseAccessAsync(userId, ct);
+        var now = DateTime.UtcNow;
         var positions = await _db.BookPuzzles
-            .Where(bp => bp.BookId == bookId && (hasCourse || bp.Chapter == null))
+            .Where(bp => bp.BookId == bookId
+                && (bp.Chapter == null
+                    || (hasCourse && (isAdmin || !_db.ChapterReleases.Any(r =>
+                        r.BookId == bookId && r.Chapter == bp.Chapter
+                        && !(r.ReleaseAt != null && r.ReleaseAt <= now)
+                        && !(isTester && r.TesterReleaseAt != null && r.TesterReleaseAt <= now))))))
             .OrderBy(bp => bp.Round.Length).ThenBy(bp => bp.Round).ThenBy(bp => bp.Id)
             .Select(bp => new CalcPositionListItemDto
             {
@@ -188,7 +213,7 @@ public class CalculationService
             ?? throw new KeyNotFoundException("Position not found.");
         var bookId = puzzle.BookId;
         await EnsureBookAccessAsync(bookId, ct);
-        await EnsureChapterAccessAsync(userId, isAdmin, puzzle.Chapter, ct);
+        await EnsureChapterAccessAsync(userId, isAdmin, bookId, puzzle.Chapter, ct);
 
         var tree = await _db.CalculationTrees
             .FirstOrDefaultAsync(t => t.UserId == userId && t.BookPuzzleId == bookPuzzleId, ct);
@@ -289,7 +314,7 @@ public class CalculationService
             ?? throw new KeyNotFoundException("Position not found.");
         var bookId = puzzle.BookId;
         await EnsureBookAccessAsync(bookId, ct);
-        await EnsureChapterAccessAsync(userId, isAdmin, puzzle.Chapter, ct);
+        await EnsureChapterAccessAsync(userId, isAdmin, bookId, puzzle.Chapter, ct);
 
         var tree = await _db.CalculationTrees
             .FirstOrDefaultAsync(t => t.UserId == userId && t.BookPuzzleId == bookPuzzleId, ct);
@@ -461,7 +486,8 @@ public class CalculationService
     /// freien Nummer weiter; Titel werden fortlaufend vergeben. Gibt die Zahl der angelegten
     /// Stellungen zurück. Buch muss existieren und ein Kalkulationsbuch sein (sonst 404).</summary>
     public async Task<int> AddChapterPositionsAsync(int bookId, string chapter,
-        IReadOnlyList<FenListParser.ParsedFen> positions, CancellationToken ct = default)
+        IReadOnlyList<FenListParser.ParsedFen> positions,
+        DateTime? releaseAt = null, DateTime? testerReleaseAt = null, CancellationToken ct = default)
     {
         var isCalc = await _db.Books.Where(b => b.Id == bookId).Select(b => (bool?)b.IsCalculation).FirstOrDefaultAsync(ct);
         if (isCalc != true) throw new KeyNotFoundException("Book not found.");
@@ -490,8 +516,69 @@ public class CalculationService
             });
             next++;
         }
+        // Freischalt-Termine: nur anfassen, wenn beim Anlegen welche mitgegeben wurden —
+        // ein Nachschub ohne Termine laesst bestehende Termine unveraendert.
+        if (releaseAt != null || testerReleaseAt != null)
+            await UpsertChapterReleaseAsync(bookId, name, releaseAt, testerReleaseAt, ct);
+
         await _db.SaveChangesAsync(ct);
         return positions.Count;
+    }
+
+    /// <summary>Kapitel-Uebersicht fuers Admin-Authoring (Name, Umfang, Termine).</summary>
+    public async Task<List<ChapterInfoDto>> GetChaptersAsync(int bookId, CancellationToken ct = default)
+    {
+        await EnsureBookAccessAsync(bookId, ct);
+        var counts = await _db.BookPuzzles
+            .Where(bp => bp.BookId == bookId && bp.Chapter != null)
+            .GroupBy(bp => bp.Chapter!)
+            .Select(g => new { Chapter = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+        var releases = await _db.ChapterReleases.Where(r => r.BookId == bookId).ToListAsync(ct);
+        var byChapter = releases.ToDictionary(r => r.Chapter);
+        return counts
+            .OrderBy(c => c.Chapter, StringComparer.Ordinal)
+            .Select(c => new ChapterInfoDto
+            {
+                Chapter = c.Chapter,
+                Positions = c.Count,
+                ReleaseAt = byChapter.TryGetValue(c.Chapter, out var r) ? r.ReleaseAt : null,
+                TesterReleaseAt = byChapter.TryGetValue(c.Chapter, out var r2) ? r2.TesterReleaseAt : null,
+            })
+            .ToList();
+    }
+
+    /// <summary>Freischalt-Termine eines Kapitels setzen; beide null loescht den Eintrag
+    /// (Kapitel sofort fuer alle Freigeschalteten sichtbar). 404 bei unbekanntem Kapitel.</summary>
+    public async Task SetChapterReleaseAsync(int bookId, string chapter,
+        DateTime? releaseAt, DateTime? testerReleaseAt, CancellationToken ct = default)
+    {
+        await EnsureBookAccessAsync(bookId, ct);
+        if (!await _db.BookPuzzles.AnyAsync(bp => bp.BookId == bookId && bp.Chapter == chapter, ct))
+            throw new KeyNotFoundException("Chapter not found.");
+
+        if (releaseAt == null && testerReleaseAt == null)
+        {
+            await _db.ChapterReleases
+                .Where(r => r.BookId == bookId && r.Chapter == chapter).ExecuteDeleteAsync(ct);
+            return;
+        }
+        await UpsertChapterReleaseAsync(bookId, chapter, releaseAt, testerReleaseAt, ct);
+        await _db.SaveChangesAsync(ct);
+    }
+
+    private async Task UpsertChapterReleaseAsync(int bookId, string chapter,
+        DateTime? releaseAt, DateTime? testerReleaseAt, CancellationToken ct)
+    {
+        var release = await _db.ChapterReleases
+            .FirstOrDefaultAsync(r => r.BookId == bookId && r.Chapter == chapter, ct);
+        if (release == null)
+        {
+            release = new ChapterRelease { BookId = bookId, Chapter = chapter };
+            _db.ChapterReleases.Add(release);
+        }
+        release.ReleaseAt = releaseAt;
+        release.TesterReleaseAt = testerReleaseAt;
     }
 
     /// <summary>

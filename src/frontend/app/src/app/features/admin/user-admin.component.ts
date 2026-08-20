@@ -19,6 +19,7 @@ interface AdminUser {
   email: string;
   isAdmin: boolean;
   courseAccess: boolean;
+  isTester: boolean;
   createdAt: string;
 }
 
@@ -64,6 +65,7 @@ interface AdminUser {
                     <th>{{ 'admin.users.colEmail' | translate }}</th>
                     <th>{{ 'admin.users.colRegistered' | translate }}</th>
                     <th>{{ 'admin.users.colCourse' | translate }}</th>
+                    <th>{{ 'admin.users.colTester' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -81,9 +83,16 @@ interface AdminUser {
                           {{ (u.courseAccess ? 'admin.users.granted' : 'admin.users.locked') | translate }}
                         </mat-slide-toggle>
                       </td>
+                      <td>
+                        <!-- Tester sehen terminierte Kapitel schon ab dem Tester-Termin. -->
+                        <mat-slide-toggle [checked]="u.isTester" [disabled]="busyIds.has(u.id)"
+                                          (change)="setTester(u, $event.checked)">
+                          {{ (u.isTester ? 'admin.users.tester' : 'admin.users.notTester') | translate }}
+                        </mat-slide-toggle>
+                      </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="4" class="muted">{{ 'admin.users.empty' | translate }}</td></tr>
+                    <tr><td colspan="5" class="muted">{{ 'admin.users.empty' | translate }}</td></tr>
                   }
                 </tbody>
               </table>
@@ -141,6 +150,21 @@ export class UserAdminComponent implements OnInit {
 
   grantedCount(): number {
     return this.users.reduce((n, u) => n + (u.courseAccess ? 1 : 0), 0);
+  }
+
+  setTester(user: AdminUser, tester: boolean): void {
+    this.busyIds.add(user.id);
+    this.http.put<AdminUser>(`/api/admin/users/${user.id}/tester`, { tester }).subscribe({
+      next: updated => {
+        this.busyIds.delete(user.id);
+        user.isTester = updated.isTester;
+      },
+      error: err => {
+        this.busyIds.delete(user.id);
+        user.isTester = !tester;
+        this.snackbar.warn(extractHttpErrorMessage(err, this.translate.instant('common.error')));
+      },
+    });
   }
 
   setAccess(user: AdminUser, access: boolean): void {

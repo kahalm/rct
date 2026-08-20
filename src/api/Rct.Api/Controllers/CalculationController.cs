@@ -83,13 +83,39 @@ public class CalculationController : BaseApiController
         try
         {
             if (parsed.Positions.Count > 0)
-                added = await _service.AddChapterPositionsAsync(bookId, dto.Chapter, parsed.Positions, ct);
+                added = await _service.AddChapterPositionsAsync(bookId, dto.Chapter, parsed.Positions,
+                    dto.ReleaseAt, dto.TesterReleaseAt, ct);
             else if (parsed.Errors.Count == 0)
                 return BadRequest(new { message = "No positions found." });
         }
         catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
         catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
         return Ok(new AddChapterResultDto { Added = added, Errors = parsed.Errors });
+    }
+
+    /// <summary>Kapitel-Uebersicht (NUR Admin): Name, Umfang, Freischalt-Termine.</summary>
+    [HttpGet("books/{bookId}/chapters")]
+    public async Task<ActionResult<List<ChapterInfoDto>>> GetChapters(int bookId, CancellationToken ct)
+    {
+        if (!IsAdmin) return Forbid();
+        try { return Ok(await _service.GetChaptersAsync(bookId, ct)); }
+        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+    }
+
+    /// <summary>Freischalt-Termine eines Kapitels setzen (NUR Admin). Kapitelname im Body,
+    /// nicht in der Route — Namen duerfen Sonderzeichen (auch „/") enthalten.
+    /// Beide Termine null = Kapitel sofort fuer alle Freigeschalteten sichtbar.</summary>
+    [HttpPut("books/{bookId}/chapters/release")]
+    public async Task<IActionResult> SetChapterRelease(int bookId, [FromBody] SetChapterReleaseDto dto,
+        CancellationToken ct)
+    {
+        if (!IsAdmin) return Forbid();
+        try
+        {
+            await _service.SetChapterReleaseAsync(bookId, dto.Chapter, dto.ReleaseAt, dto.TesterReleaseAt, ct);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
     }
 
     /// <summary>Eigenen Analysebaum zu einer Stellung verwerfen (idempotent).</summary>

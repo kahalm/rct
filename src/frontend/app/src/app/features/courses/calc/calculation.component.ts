@@ -41,6 +41,7 @@ import { CalcGradeDialogComponent, CalcGradeDialogResult } from './calc-grade-di
 import { CalcSettingsDialogComponent } from './calc-settings-dialog.component';
 import { CalcTimelimitDialogComponent } from './calc-timelimit-dialog.component';
 import { BoardFullscreenButtonComponent } from '../../../shared/fullscreen/board-fullscreen-button.component';
+import { GuidelinesDialogComponent, GuidelinesDialogData } from '../../trial/guidelines-dialog.component';
 import {
   CalcTimerDialogComponent, CalcTimerDialogData, CalcTimerDialogResult,
 } from './calc-timer-dialog.component';
@@ -499,6 +500,12 @@ export class CalculationComponent implements OnInit, OnDestroy {
   /** Brett- und Figurenart — alles, was in DIESEM Modus etwas bewirkt. */
   openSettings(): void {
     this.dialog.open(CalcSettingsDialogComponent, { autoFocus: false });
+  }
+
+  /** Die „Real Chess Training Guidelines" nachschlagen — dasselbe Popup wie vor dem ersten Start. */
+  openGuidelines(): void {
+    this.dialog.open<GuidelinesDialogComponent, GuidelinesDialogData>(
+      GuidelinesDialogComponent, { data: { mode: 'info' }, maxWidth: '720px', autoFocus: false });
   }
 
   private static readonly MODE_CLASS = 'calc-mode';

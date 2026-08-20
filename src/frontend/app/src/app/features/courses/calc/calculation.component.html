@@ -108,6 +108,12 @@
             [attr.aria-label]="'calc.copyFen' | translate">
       <mat-icon>content_copy</mat-icon>
     </button>
+
+    <!-- Die Guidelines zum Nachlesen (dasselbe Popup wie vor dem ersten Start). -->
+    <button mat-icon-button (click)="openGuidelines()" [matTooltip]="'calc.guidelines' | translate"
+            [attr.aria-label]="'calc.guidelines' | translate">
+      <mat-icon>help_outline</mat-icon>
+    </button>
   </ng-template>
 
   <div class="calc-bar"><ng-container *ngTemplateOutlet="commandBar"></ng-container></div>

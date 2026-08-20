@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.4.0';
+export const APP_VERSION = '0.5.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -10,6 +10,10 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.5.0', date: '2026-08-20', changes: [
+    { en: 'New start page: two clear paths — get the full Real Chess Training program (nextlevelchess.kit.com) or start the trial right here. The guidelines now appear as a one-time popup before your first trial start, and the ? button in the trainer (plus a link on the start page) reopens them anytime.' },
+    { en: 'Chapters can be scheduled: each chapter gets an optional release date for everyone and an earlier one for testers. The admin "Users" page has a new tester toggle, and the "Add chapter" page lists all chapters with their schedule for editing.' },
+  ] },
   { version: '0.4.0', date: '2026-08-20', changes: [
     { en: 'One unified top bar: in the calculation trainer the app navigation now floats on the command line (RookHub pattern) instead of stacking a second row above the board; the toolbar itself is decluttered — everything lives in one menu.' },
     { en: 'Course access control: the six trial positions stay open for every account, but the course chapters are only visible to users the admin has unlocked. New admin page "Users" lists all accounts with search, filter and an unlock toggle.' },

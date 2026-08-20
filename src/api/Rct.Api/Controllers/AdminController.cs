@@ -39,6 +39,7 @@ public class AdminController : BaseApiController
                 Email = u.Email,
                 IsAdmin = u.IsAdmin,
                 CourseAccess = u.CourseAccess,
+                IsTester = u.IsTester,
                 CreatedAt = u.CreatedAt,
             })
             .ToListAsync(ct);
@@ -57,14 +58,32 @@ public class AdminController : BaseApiController
 
         user.CourseAccess = dto.Access;
         await _db.SaveChangesAsync(ct);
-        return Ok(new AdminUserDto
-        {
-            Id = user.Id,
-            Username = user.Username,
-            Email = user.Email,
-            IsAdmin = user.IsAdmin,
-            CourseAccess = user.CourseAccess,
-            CreatedAt = user.CreatedAt,
-        });
+        return Ok(ToDto(user));
     }
+
+    /// <summary>Tester-Status setzen/entziehen: Tester sehen terminierte Kapitel schon ab
+    /// deren TesterReleaseAt. Idempotent, wirkt sofort.</summary>
+    [HttpPut("users/{id}/tester")]
+    public async Task<ActionResult<AdminUserDto>> SetTester(int id, [FromBody] SetTesterDto dto,
+        CancellationToken ct)
+    {
+        if (!IsAdmin) return Forbid();
+        var user = await _db.AppUsers.FirstOrDefaultAsync(u => u.Id == id && u.DeletedAt == null, ct);
+        if (user == null) return NotFound(new { message = "User not found." });
+
+        user.IsTester = dto.Tester;
+        await _db.SaveChangesAsync(ct);
+        return Ok(ToDto(user));
+    }
+
+    private static AdminUserDto ToDto(Rct.Api.Models.AppUser user) => new()
+    {
+        Id = user.Id,
+        Username = user.Username,
+        Email = user.Email,
+        IsAdmin = user.IsAdmin,
+        CourseAccess = user.CourseAccess,
+        IsTester = user.IsTester,
+        CreatedAt = user.CreatedAt,
+    };
 }

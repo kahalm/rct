@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<BookPuzzle> BookPuzzles => Set<BookPuzzle>();
     public DbSet<CalculationTree> CalculationTrees => Set<CalculationTree>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<ChapterRelease> ChapterReleases => Set<ChapterRelease>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,6 +37,13 @@ public class AppDbContext : DbContext
              .WithMany(b => b.Puzzles)
              .HasForeignKey(bp => bp.BookId)
              .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ChapterRelease>(e =>
+        {
+            // Genau ein Termin-Eintrag je Kapitel eines Buches; geht mit dem Buch.
+            e.HasIndex(r => new { r.BookId, r.Chapter }).IsUnique();
+            e.HasOne(r => r.Book).WithMany().HasForeignKey(r => r.BookId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<PasswordResetToken>(e =>

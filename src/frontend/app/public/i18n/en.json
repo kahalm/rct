@@ -58,7 +58,9 @@
       "later": "Work through all six positions first — then audit your thinking with the breakdown video.",
       "ready": "All positions committed — time for the breakdown video.",
       "watch": "Watch the breakdown video"
-    }
+    },
+    "product": "Get Real Chess Training",
+    "showGuidelines": "Read the guidelines"
   },
   "auth": {
     "login": {
@@ -283,7 +285,8 @@
       "body": "Per the guidelines: write down your final decision for your current position — and stop. The test is deliberately hard; an honest hard stop is part of the training.",
       "review": "Then take a physical break and watch the breakdown video on the trial page to audit your thought process.",
       "ok": "Got it"
-    }
+    },
+    "guidelines": "Guidelines"
   },
   "courses": {
     "noChapter": "(no chapter)"
@@ -306,7 +309,16 @@
       "err": {
         "invalid_fen": "not a valid FEN",
         "too_many": "line limit reached (max 500 per paste) — remaining lines were skipped"
-      }
+      },
+      "releaseAt": "Release for everyone",
+      "testerReleaseAt": "Release for testers",
+      "releaseHint": "Optional (your local time). Leave both empty to make the chapter visible immediately for everyone with course access; testers can get earlier access.",
+      "chaptersTitle": "Chapters & release schedule",
+      "colChapter": "Chapter",
+      "colPositions": "Positions",
+      "noChapters": "No chapters yet.",
+      "releaseSaved": "Release schedule saved.",
+      "tableHint": "Clear both dates and save to release a chapter immediately."
     },
     "users": {
       "title": "Users",
@@ -323,7 +335,10 @@
       "granted": "Unlocked",
       "locked": "Locked",
       "isAdmin": "Administrator",
-      "empty": "No matching accounts."
+      "empty": "No matching accounts.",
+      "colTester": "Tester",
+      "tester": "Tester",
+      "notTester": "No"
     }
   }
 }

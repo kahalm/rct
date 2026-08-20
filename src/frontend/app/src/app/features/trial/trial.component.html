@@ -6,59 +6,35 @@
     </mat-card-header>
 
     <mat-card-content>
-      <!-- ===== The Process ===== -->
-      <h3 class="sec"><mat-icon>timer</mat-icon> {{ 'trial.process.title' | translate }}</h3>
-      <ul class="rules">
-        <li><strong>{{ 'trial.process.timerHead' | translate }}</strong> {{ 'trial.process.timer' | translate }}</li>
-        <li><strong>{{ 'trial.process.manageHead' | translate }}</strong> {{ 'trial.process.manage' | translate }}</li>
-        <li><strong>{{ 'trial.process.commitHead' | translate }}</strong> {{ 'trial.process.commit' | translate }}</li>
-        <li><strong>{{ 'trial.process.stopHead' | translate }}</strong> {{ 'trial.process.stop' | translate }}</li>
-        <li><strong>{{ 'trial.process.reviewHead' | translate }}</strong> {{ 'trial.process.review' | translate }}</li>
-      </ul>
-
-      <!-- ===== The Mindset ===== -->
-      <h3 class="sec"><mat-icon>psychology</mat-icon> {{ 'trial.mindset.title' | translate }}</h3>
-      <ul class="rules">
-        <li><strong>{{ 'trial.mindset.struggleHead' | translate }}</strong> {{ 'trial.mindset.struggle' | translate }}</li>
-        <li><strong>{{ 'trial.mindset.wallHead' | translate }}</strong> {{ 'trial.mindset.wall' | translate }}</li>
-        <li><strong>{{ 'trial.mindset.processHead' | translate }}</strong> {{ 'trial.mindset.process' | translate }}</li>
-        <li><strong>{{ 'trial.mindset.goodEnoughHead' | translate }}</strong> {{ 'trial.mindset.goodEnough' | translate }}</li>
-      </ul>
-
-      <!-- ===== The Golden Rule ===== -->
-      <p class="golden"><mat-icon>star</mat-icon> <strong>{{ 'trial.goldenHead' | translate }}</strong> {{ 'trial.golden' | translate }}</p>
-
-      <!-- ===== Benefits ===== -->
-      <h3 class="sec"><mat-icon>trending_up</mat-icon> {{ 'trial.benefits.title' | translate }}</h3>
-      <ul class="benefits">
-        <li>{{ 'trial.benefits.confidence' | translate }}</li>
-        <li>{{ 'trial.benefits.time' | translate }}</li>
-        <li>{{ 'trial.benefits.tactics' | translate }}</li>
-        <li>{{ 'trial.benefits.keyMoments' | translate }}</li>
-        <li>{{ 'trial.benefits.easier' | translate }}</li>
-      </ul>
-    </mat-card-content>
-
-    <mat-card-actions class="trial-actions">
-      @if (loading) {
-        <mat-spinner diameter="28"></mat-spinner>
-      } @else if (loadError) {
-        <p class="load-error">{{ 'trial.loadFailed' | translate }}</p>
-      } @else {
-        <button mat-raised-button color="primary" class="start-btn" [routerLink]="['/courses', bookId, 'calc']">
-          <mat-icon>play_arrow</mat-icon>
-          {{ (chosenCount > 0 ? 'trial.continue' : 'trial.start') | translate }}
-        </button>
-        @if (positionCount > 0) {
-          <span class="progress-line">
-            {{ 'trial.progress' | translate:{ chosen: chosenCount, total: positionCount } }}
-            @if (ratedCount > 0) {
-              · {{ 'trial.points' | translate:{ points, max: maxPoints } }}
-            }
-          </span>
+      <!-- ===== Zwei Wege: das volle Programm (extern) oder das Trial hier ===== -->
+      <div class="trial-cta">
+        <a mat-stroked-button class="cta-btn" [href]="productUrl" target="_blank" rel="noopener">
+          <mat-icon>open_in_new</mat-icon> {{ 'trial.product' | translate }}
+        </a>
+        @if (loading) {
+          <mat-spinner diameter="28"></mat-spinner>
+        } @else if (loadError) {
+          <p class="load-error">{{ 'trial.loadFailed' | translate }}</p>
+        } @else {
+          <button mat-raised-button color="primary" class="cta-btn start-btn" (click)="startTrial()">
+            <mat-icon>play_arrow</mat-icon>
+            {{ (chosenCount > 0 ? 'trial.continue' : 'trial.start') | translate }}
+          </button>
         }
+      </div>
+      @if (!loading && !loadError && positionCount > 0) {
+        <p class="progress-line">
+          {{ 'trial.progress' | translate:{ chosen: chosenCount, total: positionCount } }}
+          @if (ratedCount > 0) {
+            · {{ 'trial.points' | translate:{ points, max: maxPoints } }}
+          }
+        </p>
       }
-    </mat-card-actions>
+      <p class="guidelines-hint">
+        <mat-icon>help_outline</mat-icon>
+        <a href="javascript:void(0)" (click)="showGuidelines()">{{ 'trial.showGuidelines' | translate }}</a>
+      </p>
+    </mat-card-content>
 
     <!-- ===== Review (Video) — erst nach dem Durcharbeiten hervorgehoben ===== -->
     <mat-card-footer class="review" [class.review--ready]="done">

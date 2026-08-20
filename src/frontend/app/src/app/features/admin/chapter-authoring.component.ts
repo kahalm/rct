@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -11,6 +11,29 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { SnackbarService } from '../../core/snackbar.service';
 import { extractHttpErrorMessage } from '../../core/http-error';
 import { TRIAL_BOOK_ID } from '../trial/trial.component';
+
+/** ISO-UTC → Wert fuer <input type="datetime-local"> (lokale Zeit, Minutenaufloesung). */
+function isoToLocal(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** datetime-local (lokale Zeit) → ISO-UTC; leer → null (nicht terminiert). */
+function localToIso(local: string): string | null {
+  if (!local || !local.trim()) return null;
+  const d = new Date(local);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+interface ChapterRow {
+  chapter: string;
+  positions: number;
+  releaseAtLocal: string;
+  testerReleaseAtLocal: string;
+}
 
 /**
  * Kapitel-Authoring (nur Admin, eigene Seite — vorher eine Karte auf /trial): FEN-Memo im
@@ -37,6 +60,19 @@ import { TRIAL_BOOK_ID } from '../trial/trial.component';
             <textarea matInput rows="10" [(ngModel)]="authorFens" [disabled]="authorBusy"
                       placeholder="r1b2rk1/pppq1ppp/1bn5/8/3N4/4BB2/PPPQ1PPP/R3K2R w KQ - 0 1 | comment…"></textarea>
           </mat-form-field>
+          <!-- Freischalt-Termine (optional; lokale Zeit, wird als UTC gespeichert):
+               leer + leer = sofort fuer alle Freigeschalteten sichtbar. -->
+          <div class="release-row">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>{{ 'admin.author.releaseAt' | translate }}</mat-label>
+              <input matInput type="datetime-local" [(ngModel)]="releaseAtLocal" [disabled]="authorBusy">
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>{{ 'admin.author.testerReleaseAt' | translate }}</mat-label>
+              <input matInput type="datetime-local" [(ngModel)]="testerReleaseAtLocal" [disabled]="authorBusy">
+            </mat-form-field>
+          </div>
+          <p class="hint">{{ 'admin.author.releaseHint' | translate }}</p>
           <button mat-raised-button color="primary" (click)="addChapter()"
                   [disabled]="authorBusy || !authorChapter.trim() || !authorFens.trim()">
             <mat-icon>playlist_add</mat-icon> {{ 'admin.author.add' | translate }}
@@ -54,6 +90,50 @@ import { TRIAL_BOOK_ID } from '../trial/trial.component';
           }
         </mat-card-content>
       </mat-card>
+
+      <!-- ===== Bestehende Kapitel: Umfang + Freischalt-Termine je Kapitel aendern ===== -->
+      <mat-card class="chapters-card">
+        <mat-card-header>
+          <mat-card-title>{{ 'admin.author.chaptersTitle' | translate }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (chaptersLoading) {
+            <p class="muted">{{ 'common.loading' | translate }}</p>
+          } @else {
+            <div class="chapters-table-wrap">
+              <table class="chapters-table">
+                <thead>
+                  <tr>
+                    <th>{{ 'admin.author.colChapter' | translate }}</th>
+                    <th>{{ 'admin.author.colPositions' | translate }}</th>
+                    <th>{{ 'admin.author.releaseAt' | translate }}</th>
+                    <th>{{ 'admin.author.testerReleaseAt' | translate }}</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of chapters; track c.chapter) {
+                    <tr>
+                      <td>{{ c.chapter }}</td>
+                      <td>{{ c.positions }}</td>
+                      <td><input class="dt" type="datetime-local" [(ngModel)]="c.releaseAtLocal" [disabled]="savingChapter === c.chapter"></td>
+                      <td><input class="dt" type="datetime-local" [(ngModel)]="c.testerReleaseAtLocal" [disabled]="savingChapter === c.chapter"></td>
+                      <td>
+                        <button mat-stroked-button (click)="saveRelease(c)" [disabled]="savingChapter === c.chapter">
+                          {{ 'common.save' | translate }}
+                        </button>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="5" class="muted">{{ 'admin.author.noChapters' | translate }}</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <p class="hint">{{ 'admin.author.tableHint' | translate }}</p>
+          }
+        </mat-card-content>
+      </mat-card>
     </div>
   `,
   styles: [`
@@ -63,6 +143,15 @@ import { TRIAL_BOOK_ID } from '../trial/trial.component';
     .hint { margin: 0; opacity: 0.75; font-size: 0.9rem; }
     mat-form-field { width: 100%; }
     button { align-self: flex-start; }
+    .release-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .release-row mat-form-field { flex: 1 1 220px; }
+    .chapters-card { margin-top: 1.25rem; }
+    .chapters-table-wrap { overflow-x: auto; }
+    .chapters-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    .chapters-table th { text-align: left; font-weight: 500; opacity: 0.7; padding: 8px 10px; border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent); }
+    .chapters-table td { padding: 8px 10px; border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent); }
+    .dt { background: transparent; color: inherit; border: 1px solid color-mix(in srgb, currentColor 30%, transparent); border-radius: 6px; padding: 6px 8px; font: inherit; color-scheme: inherit; }
+    .muted { opacity: 0.7; }
     .author-errors {
       margin: 4px 0 0; padding-left: 20px; font-size: 0.85rem; color: #e57373;
       li { margin-bottom: 4px; }
@@ -70,17 +159,66 @@ import { TRIAL_BOOK_ID } from '../trial/trial.component';
     }
   `]
 })
-export class ChapterAuthoringComponent {
+export class ChapterAuthoringComponent implements OnInit {
   authorChapter = '';
   authorFens = '';
   authorBusy = false;
   authorErrors: { lineNumber: number; reason: string; text?: string }[] = [];
+  /** Freischalt-Termine fuers NEUE Kapitel (datetime-local, lokale Zeit; leer = sofort). */
+  releaseAtLocal = '';
+  testerReleaseAtLocal = '';
+
+  chapters: ChapterRow[] = [];
+  chaptersLoading = true;
+  savingChapter: string | null = null;
 
   constructor(
     private http: HttpClient,
     private snackbar: SnackbarService,
     private translate: TranslateService,
   ) {}
+
+  ngOnInit(): void {
+    this.loadChapters();
+  }
+
+  private loadChapters(): void {
+    this.chaptersLoading = true;
+    this.http.get<{ chapter: string; positions: number; releaseAt: string | null; testerReleaseAt: string | null }[]>(
+      `/api/calculations/books/${TRIAL_BOOK_ID}/chapters`).subscribe({
+      next: rows => {
+        this.chapters = rows.map(r => ({
+          chapter: r.chapter,
+          positions: r.positions,
+          releaseAtLocal: isoToLocal(r.releaseAt),
+          testerReleaseAtLocal: isoToLocal(r.testerReleaseAt),
+        }));
+        this.chaptersLoading = false;
+      },
+      error: err => {
+        this.chaptersLoading = false;
+        this.snackbar.warn(extractHttpErrorMessage(err, this.translate.instant('common.error')));
+      },
+    });
+  }
+
+  saveRelease(row: ChapterRow): void {
+    this.savingChapter = row.chapter;
+    this.http.put(`/api/calculations/books/${TRIAL_BOOK_ID}/chapters/release`, {
+      chapter: row.chapter,
+      releaseAt: localToIso(row.releaseAtLocal),
+      testerReleaseAt: localToIso(row.testerReleaseAtLocal),
+    }).subscribe({
+      next: () => {
+        this.savingChapter = null;
+        this.snackbar.quick(this.translate.instant('admin.author.releaseSaved'));
+      },
+      error: err => {
+        this.savingChapter = null;
+        this.snackbar.warn(extractHttpErrorMessage(err, this.translate.instant('common.error')));
+      },
+    });
+  }
 
   addChapter(): void {
     const chapter = this.authorChapter.trim();
@@ -89,7 +227,11 @@ export class ChapterAuthoringComponent {
     this.authorErrors = [];
     this.http.post<{ added: number; errors: { lineNumber: number; reason: string; text?: string }[] }>(
       `/api/calculations/books/${TRIAL_BOOK_ID}/chapters`,
-      { chapter, fenList: this.authorFens },
+      {
+        chapter, fenList: this.authorFens,
+        releaseAt: localToIso(this.releaseAtLocal),
+        testerReleaseAt: localToIso(this.testerReleaseAtLocal),
+      },
     ).subscribe({
       next: res => {
         this.authorBusy = false;
@@ -99,6 +241,9 @@ export class ChapterAuthoringComponent {
         if (res.added > 0) {
           this.authorChapter = '';
           this.authorFens = '';
+          this.releaseAtLocal = '';
+          this.testerReleaseAtLocal = '';
+          this.loadChapters();
         }
       },
       error: err => {

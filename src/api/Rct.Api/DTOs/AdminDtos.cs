@@ -8,10 +8,16 @@ public class AdminUserDto
     public string Email { get; set; } = string.Empty;
     public bool IsAdmin { get; set; }
     public bool CourseAccess { get; set; }
+    public bool IsTester { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 
 public class SetCourseAccessDto
 {
     public bool Access { get; set; }
+}
+
+public class SetTesterDto
+{
+    public bool Tester { get; set; }
 }
