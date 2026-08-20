@@ -23,6 +23,10 @@ public class UpdateProfileDto
     // leerer String wird im Service abgelehnt — E-Mail ist bei RCT Pflicht).
     [EmailAddress, MaxLength(255)]
     public string? Email { get; set; }
+
+    /// <summary>Nur bei E-MAIL-Aenderung Pflicht: aktuelles Passwort als Besitznachweis (die
+    /// E-Mail ist der Passwort-Reset-Kanal; ein Token allein darf sie nicht umbiegen).</summary>
+    public string? CurrentPassword { get; set; }
 }
 
 /// <summary>Konto loeschen (DELETE /api/profile/account) — verlangt das aktuelle Passwort.</summary>

@@ -10,6 +10,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { AuthPrefillService } from '../../core/auth-prefill.service';
 import { SnackbarService } from '../../core/snackbar.service';
+import { extractHttpErrorMessage } from '../../core/http-error';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.Default,
@@ -88,9 +89,7 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading = false;
-        const msg = err.error?.message
-          || (err.error?.errors && Object.values(err.error.errors).flat().join(' '))
-          || this.translate.instant('auth.login.failed');
+        const msg = extractHttpErrorMessage(err, this.translate.instant('auth.login.failed'));
         this.snackbar.warn(msg);
       }
     });

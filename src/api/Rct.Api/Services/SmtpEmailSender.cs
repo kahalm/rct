@@ -60,8 +60,8 @@ public class SmtpEmailSender : IEmailSender
             return;
         }
 
-        var fromAddress = _config["Email:FromAddress"] ?? _config["Email:SmtpUser"]
-            ?? throw new InvalidOperationException("Email:FromAddress or Email:SmtpUser must be configured.");
+        var fromAddress = FirstNonEmpty(_config["Email:FromAddress"], _config["Email:SmtpUser"])
+            ?? throw new InvalidOperationException("Email:FromAddress/Email:SmtpUser is not configured.");
         var fromName = _config["Email:FromName"] ?? "Real Chess Training";
 
         var message = new MimeMessage();
@@ -73,12 +73,17 @@ public class SmtpEmailSender : IEmailSender
         var host = _config["Email:SmtpHost"]!;
         var port = int.TryParse(_config["Email:SmtpPort"], out var p) ? p : 587;
         var useStartTls = !bool.TryParse(_config["Email:UseStartTls"], out var s) || s;
-        // Port 465 = implizites SSL; sonst STARTTLS (Default) bzw. unverschluesselt, wenn explizit aus.
+        // Port 465 = implizites SSL; sonst STARTTLS (Default). "Aus" faellt auf Auto zurueck:
+        // MailKit verhandelt dann trotzdem TLS, wenn der Server es anbietet — es gibt hier
+        // bewusst KEINEN erzwungenen Klartext-Modus (dafuer waere SecureSocketOptions.None noetig).
         var socketOptions = port == 465
             ? SecureSocketOptions.SslOnConnect
             : useStartTls ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto;
 
         using var client = new SmtpClient();
+        // MailKit-Default waere 2 min — ein haengender SMTP-Host darf keinen Hintergrund-Task so
+        // lange binden (der Versand laeuft bewusst ausserhalb des Request-Pfads, s. AuthController).
+        client.Timeout = 15_000;
         await client.ConnectAsync(host, port, socketOptions, ct);
 
         var user = _config["Email:SmtpUser"];
@@ -91,4 +96,9 @@ public class SmtpEmailSender : IEmailSender
 
         _logger.LogInformation("Email sent to {To}: {Subject}", toEmail, subject);
     }
+
+    /// <summary>Erster nicht-leerer Wert — leere Env-Variablen kommen als "" (nicht null) an,
+    /// ein blosses ?? liefe daher ins Leere (Review-Finding: From "&lt;&gt;" → Mails abgelehnt).</summary>
+    private static string? FirstNonEmpty(params string?[] values)
+        => values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
 }

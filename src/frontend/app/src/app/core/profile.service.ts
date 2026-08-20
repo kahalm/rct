@@ -23,8 +23,12 @@ export class ProfileService {
     return this.http.get<Profile>(this.apiUrl);
   }
 
-  /** PUT liefert das aktualisierte Profil zurück; 409 { message } bei Duplikat/Leer-E-Mail. */
-  update(dto: { username?: string; email?: string }): Observable<Profile> {
+  /**
+   * PUT liefert das aktualisierte Profil zurück; 409 { message } bei Duplikat/Leer-E-Mail.
+   * Eine E-Mail-ÄNDERUNG verlangt zusätzlich das aktuelle Passwort (sonst 401 { message }) —
+   * Schutz gegen Konto-Übernahme über eine offen gelassene Session.
+   */
+  update(dto: { username?: string; email?: string; currentPassword?: string }): Observable<Profile> {
     return this.http.put<Profile>(this.apiUrl, dto);
   }
 }

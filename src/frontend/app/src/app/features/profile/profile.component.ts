@@ -9,6 +9,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { ProfileService } from '../../core/profile.service';
 import { SnackbarService } from '../../core/snackbar.service';
+import { extractHttpErrorMessage } from '../../core/http-error';
 
 /**
  * Profil-Seite — bewusst EINE schlanke Seite mit drei Karten:
@@ -39,7 +40,14 @@ import { SnackbarService } from '../../core/snackbar.service';
                 <mat-label>{{ 'profile.account.email' | translate }}</mat-label>
                 <input matInput type="email" [(ngModel)]="email" name="email" required email>
               </mat-form-field>
-              <button mat-raised-button color="primary" type="submit" [disabled]="savingAccount || !username.trim() || !email.trim()">
+              @if (emailChanged) {
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ 'profile.account.confirmPassword' | translate }}</mat-label>
+                  <input matInput type="password" [(ngModel)]="accountPassword" name="accountPassword" required autocomplete="current-password">
+                  <mat-hint>{{ 'profile.account.confirmPasswordHint' | translate }}</mat-hint>
+                </mat-form-field>
+              }
+              <button mat-raised-button color="primary" type="submit" [disabled]="savingAccount || !username.trim() || !email.trim() || (emailChanged && !accountPassword)">
                 {{ 'profile.account.save' | translate }}
               </button>
             </form>
@@ -104,9 +112,16 @@ export class ProfileComponent implements OnInit {
   // Karte „Konto"
   username = '';
   email = '';
+  accountPassword = '';
   private originalUsername = '';
+  private originalEmail = '';
   loaded = false;
   savingAccount = false;
+
+  /** E-Mail-Änderung? Dann verlangt der Server das aktuelle Passwort (Takeover-Schutz). */
+  get emailChanged(): boolean {
+    return this.email.trim().toLowerCase() !== this.originalEmail;
+  }
 
   // Karte „Passwort ändern"
   currentPassword = '';
@@ -130,6 +145,7 @@ export class ProfileComponent implements OnInit {
         this.username = p.username;
         this.email = p.email;
         this.originalUsername = p.username;
+        this.originalEmail = p.email.toLowerCase();
         this.loaded = true;
       },
       error: () => {
@@ -141,13 +157,20 @@ export class ProfileComponent implements OnInit {
 
   saveAccount(): void {
     this.savingAccount = true;
-    this.profile.update({ username: this.username.trim(), email: this.email.trim() }).subscribe({
+    this.profile.update({
+      username: this.username.trim(),
+      email: this.email.trim(),
+      // Nur bei E-Mail-Änderung nötig; sonst gar nicht mitschicken.
+      currentPassword: this.emailChanged ? this.accountPassword : undefined,
+    }).subscribe({
       next: p => {
         this.savingAccount = false;
         const usernameChanged = p.username !== this.originalUsername;
         this.username = p.username;
         this.email = p.email;
         this.originalUsername = p.username;
+        this.originalEmail = p.email.toLowerCase();
+        this.accountPassword = '';
         if (usernameChanged) {
           // Toolbar sofort nachziehen; der Hinweis ersetzt das „gespeichert"-Snackbar
           // (MatSnackBar zeigt ohnehin nur das jeweils letzte an).
@@ -159,9 +182,7 @@ export class ProfileComponent implements OnInit {
       },
       error: err => {
         this.savingAccount = false;
-        const msg = err.error?.message
-          || (err.error?.errors && Object.values(err.error.errors).flat().join(' '))
-          || this.translate.instant('common.error');
+        const msg = extractHttpErrorMessage(err, this.translate.instant('common.error'));
         this.snackbar.warn(msg);
       }
     });
@@ -174,14 +195,13 @@ export class ProfileComponent implements OnInit {
         this.changingPassword = false;
         this.currentPassword = '';
         this.newPassword = '';
-        // Token bleibt gültig — kein Re-Login nötig.
+        // auth.service hat das frische Token (rotierter Security-Stamp) bereits gespeichert —
+        // die Session läuft nahtlos weiter, kein Re-Login nötig.
         this.snackbar.success(this.translate.instant('profile.password.changed'));
       },
       error: err => {
         this.changingPassword = false;
-        const msg = err.error?.message
-          || (err.error?.errors && Object.values(err.error.errors).flat().join(' '))
-          || this.translate.instant('common.error');
+        const msg = extractHttpErrorMessage(err, this.translate.instant('common.error'));
         this.snackbar.warn(msg);
       }
     });
@@ -195,7 +215,7 @@ export class ProfileComponent implements OnInit {
       next: () => {},
       error: err => {
         this.deleting = false;
-        const msg = err.error?.message || this.translate.instant('profile.delete.failed');
+        const msg = extractHttpErrorMessage(err, this.translate.instant('profile.delete.failed'));
         this.snackbar.warn(msg);
       }
     });

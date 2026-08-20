@@ -75,9 +75,14 @@ export class AuthService {
       .pipe(tap(res => this.storeUser(res)));
   }
 
-  /** Passwort des eingeloggten Users ändern (aktuelles + neues Passwort). */
-  changePassword(currentPassword: string, newPassword: string): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/change-password`, { currentPassword, newPassword });
+  /**
+   * Passwort des eingeloggten Users ändern (aktuelles + neues Passwort). Der Server rotiert
+   * dabei den Security-Stamp und liefert ein FRISCHES Token zurück — das alte würde binnen
+   * 60 s ungültig (stiller Logout). Deshalb hier sofort speichern.
+   */
+  changePassword(currentPassword: string, newPassword: string): Observable<AuthResponse> {
+    return this.http.put<AuthResponse>(`${this.apiUrl}/change-password`, { currentPassword, newPassword })
+      .pipe(tap(res => this.storeUser(res)));
   }
 
   /** „Passwort vergessen": Server verschickt ggf. einen Reset-Link, antwortet aber IMMER neutral 200. */

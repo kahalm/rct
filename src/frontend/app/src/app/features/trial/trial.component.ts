@@ -15,6 +15,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { SnackbarService } from '../../core/snackbar.service';
 import { CalculationService, CalcBook } from '../courses/calc/calculation.service';
+import { extractHttpErrorMessage } from '../../core/http-error';
 
 /** Feste Buch-Id des Trial-Kalkulationsbuchs (vom RctSeeder als erstes Buch angelegt). */
 export const TRIAL_BOOK_ID = 1;
@@ -112,7 +113,7 @@ export class TrialComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.authorBusy = false;
-        this.snackbar.warn(err?.error?.message || this.translate.instant('common.error'));
+        this.snackbar.warn(extractHttpErrorMessage(err, this.translate.instant('common.error')));
       },
     });
   }

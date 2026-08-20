@@ -9,6 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from './core/auth.service';
 import { LocaleService } from './core/locale.service';
+import { ThemeService } from './core/theme.service';
 import { FullscreenOverlayService } from './shared/fullscreen/fullscreen-overlay.service';
 import { environment } from '../environments/environment';
 
@@ -28,6 +29,9 @@ import { environment } from '../environments/environment';
         <span>{{ 'app.title' | translate }}</span>
       </a>
       <span class="spacer"></span>
+      <button mat-icon-button (click)="theme.toggle()" [matTooltip]="themeLabel | translate">
+        <mat-icon>{{ themeIcon }}</mat-icon>
+      </button>
       <button mat-icon-button [matMenuTriggerFor]="langMenu" [matTooltip]="'app.language' | translate">
         <mat-icon>language</mat-icon>
       </button>
@@ -67,9 +71,28 @@ export class AppComponent {
   constructor(
     public auth: AuthService,
     public locale: LocaleService,
+    public theme: ThemeService,
     // App-weit instanziieren (siehe Klassen-Doku) — Referenz genügt.
     _fullscreenOverlay: FullscreenOverlayService,
   ) {
     this.locale.init();
+  }
+
+  // Icon/Tooltip zeigen die AKTIVE Einstellung (RookHub-Muster); Klick zyklt
+  // system → light → dark (Default ist dark, siehe ThemeService).
+  get themeIcon(): string {
+    switch (this.theme.preference) {
+      case 'system': return 'brightness_auto';
+      case 'light': return 'light_mode';
+      default: return 'dark_mode';
+    }
+  }
+
+  get themeLabel(): string {
+    switch (this.theme.preference) {
+      case 'system': return 'app.themeSystem';
+      case 'light': return 'app.themeLight';
+      default: return 'app.themeDark';
+    }
   }
 }

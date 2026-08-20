@@ -3,7 +3,10 @@
     "title": "Real Chess Training",
     "language": "Language",
     "logout": "Sign out",
-    "profile": "Profile"
+    "profile": "Profile",
+    "themeSystem": "System theme",
+    "themeLight": "Light theme",
+    "themeDark": "Dark theme"
   },
   "trial": {
     "title": "Real Chess Training — Trial",
@@ -110,6 +113,8 @@
       "title": "Account",
       "username": "Username",
       "email": "Email",
+      "confirmPassword": "Current password",
+      "confirmPasswordHint": "Required to change your email address",
       "save": "Save",
       "saved": "Profile saved.",
       "usernameChangedHint": "Profile saved — use your new username the next time you sign in."

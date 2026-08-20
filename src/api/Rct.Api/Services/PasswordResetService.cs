@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Rct.Api.Data;
 using Rct.Api.Models;
 
@@ -20,20 +21,26 @@ namespace Rct.Api.Services;
 public class PasswordResetService
 {
     public static readonly TimeSpan TokenTtl = TimeSpan.FromHours(1);
+
+    /// <summary>Mindestabstand zwischen zwei Reset-Mails an DASSELBE Konto (Mail-Bombing-Schutz:
+    /// der Per-IP-Limiter begrenzt Angreifer-Requests, nicht die Mails je OPFER).</summary>
+    public static readonly TimeSpan RequestCooldown = TimeSpan.FromMinutes(3);
     private const int TokenBytes = 32;            // → ~43 Char Base64URL
-    private const int BcryptWorkFactor = 12;      // identisch zu AuthService
 
     private readonly AppDbContext _db;
     private readonly IEmailSender _email;
     private readonly IConfiguration _config;
     private readonly ILogger<PasswordResetService> _logger;
+    private readonly IMemoryCache _cache;
 
-    public PasswordResetService(AppDbContext db, IEmailSender email, IConfiguration config, ILogger<PasswordResetService> logger)
+    public PasswordResetService(AppDbContext db, IEmailSender email, IConfiguration config,
+        ILogger<PasswordResetService> logger, IMemoryCache cache)
     {
         _db = db;
         _email = email;
         _config = config;
         _logger = logger;
+        _cache = cache;
     }
 
     /// <summary>
@@ -53,15 +60,33 @@ public class PasswordResetService
             return;
         }
 
+        // SMTP aus (kein Email:SmtpHost): SendAsync waere ein stiller Drop — dann wuerden unten
+        // trotzdem die noch gueltigen alten Links entwertet und faelschlich "dispatched" geloggt
+        // (Review-Finding). Ohne Versandweg passiert hier deshalb GAR nichts.
+        if (!_email.IsEnabled)
+        {
+            _logger.LogError("PasswordReset: email is not configured — request for user {UserId} ignored", user.Id);
+            return;
+        }
+
+        // Cooldown je KONTO: wurde eben erst ein Token erzeugt, still nichts tun (neutrale
+        // Antwort bleibt — kein Enumeration-Leak, aber Mail-Bombing je Opfer ist gedeckelt).
+        var cooldownSince = DateTime.UtcNow - RequestCooldown;
+        if (await _db.PasswordResetTokens.AnyAsync(t => t.UserId == user.Id && t.CreatedAt > cooldownSince, ct))
+        {
+            _logger.LogInformation("PasswordReset: cooldown active for user {UserId} (no mail)", user.Id);
+            return;
+        }
+
         // ERST die Mail verschicken, DANN alte Tokens entwerten + das neue persistieren.
         // Umgekehrt (entwerten+committen vor dem Versand) liess ein SMTP-Ausfall den User mit
         // NULL funktionierenden Links zurueck: der bereits zugestellte alte Link war entwertet,
         // der neue kam nie an (Send-Fehler wird bewusst geschluckt, s. u.).
         var rawToken = GenerateRawToken();
-        var link = BuildResetLink(rawToken);
-        var (subject, html, text) = BuildEmail(user.Username, link);
         try
         {
+            var link = BuildResetLink(rawToken);
+            var (subject, html, text) = BuildEmail(user.Username, link);
             await _email.SendAsync(user.Email, subject, html, text, ct);
         }
         catch (Exception ex)
@@ -110,9 +135,8 @@ public class PasswordResetService
         if (user == null || user.DeletedAt != null)
             throw new UnauthorizedAccessException("Invalid or expired reset token.");
 
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword, BcryptWorkFactor);
-        // Security-Stamp rotieren → bestehende JWTs (mit altem sstamp-Claim) werden ungültig.
-        user.SecurityStamp = AuthService.NewSecurityStamp();
+        // Neues Passwort + Stamp-Rotation → bestehende JWTs (alter sstamp-Claim) werden ungültig.
+        AuthService.SetPassword(user, newPassword);
         token.UsedAt = now;
 
         // Alle weiteren offenen Tokens des Users ebenfalls entwerten.
@@ -122,16 +146,20 @@ public class PasswordResetService
         foreach (var t in others) t.UsedAt = now;
 
         await _db.SaveChangesAsync(ct);
+        // Auth-Cache verwerfen: sonst bleibt (a) ein altes/gestohlenes Token bis zu 60 s gueltig
+        // und (b) das nach dem Reset frisch erloggte Token wuerde gegen den gecachten alten Stamp
+        // abgelehnt (Review-Finding).
+        AuthUserValidation.Invalidate(_cache, user.Id);
         _logger.LogInformation("PasswordReset: password changed for user {UserId}", user.Id);
     }
 
     private string BuildResetLink(string rawToken)
     {
-        // Basis-URL des Frontends; Fallback auf relativ, falls nicht konfiguriert (Link dann
-        // nur in der Mail kaputt — wird per Warnung sichtbar gemacht).
+        // Ohne Basis-URL waere der Link relativ und in der Mail unklickbar — dann lieber GAR
+        // keine Mail (Fehler landet via catch im Log) als eine kaputte (Review-Finding).
         var baseUrl = _config["App:BaseUrl"]?.TrimEnd('/');
         if (string.IsNullOrEmpty(baseUrl))
-            _logger.LogWarning("PasswordReset: App:BaseUrl not configured — reset link will be relative.");
+            throw new InvalidOperationException("App:BaseUrl is not configured — cannot build a reset link.");
         return $"{baseUrl}/reset-password?token={Uri.EscapeDataString(rawToken)}";
     }
 

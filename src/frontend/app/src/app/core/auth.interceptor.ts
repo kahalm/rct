@@ -20,10 +20,19 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       // 401 heißt normalerweise „Session abgelaufen" → ausloggen. Ausnahme: Endpoints,
       // bei denen 401 die FACHLICHE Antwort „falsches Passwort / ungültiges Token" ist —
       // dort bleibt die Session gültig und die Seite zeigt den Fehler selbst an.
-      const password401 = req.url === '/api/auth/change-password'
+      // /api/auth/login: ein fehlgeschlagener Login-VERSUCH darf eine bestehende Session
+      // nie zerstören. /api/profile: PUT verlangt bei E-Mail-Änderung das aktuelle Passwort.
+      // Die fachlichen 401s kommen IMMER aus unseren Controllern mit { message } im Body;
+      // ein 401 der Auth-MIDDLEWARE (Token abgelaufen/invalidiert) hat einen LEEREN Body —
+      // der bedeutet auch auf diesen URLs „Session tot" und muss ausloggen, sonst hängt
+      // der User in einer Sackgasse, in der kein Retry je gelingen kann.
+      const businessUrl = req.url === '/api/auth/login'
+        || req.url === '/api/auth/change-password'
         || req.url === '/api/auth/reset-password'
+        || req.url === '/api/profile'
         || req.url === '/api/profile/account';
-      if (err.status === 401 && !password401 && authService.isLoggedIn) {
+      const business401 = businessUrl && !!(err?.error && err.error.message);
+      if (err.status === 401 && !business401 && authService.isLoggedIn) {
         authService.logout();
       }
       return throwError(() => err);

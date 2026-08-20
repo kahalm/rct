@@ -27,7 +27,14 @@ html.dark-theme {
 }/* You can add global styles to this file, and also import other style files */
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  // Material-Systemfarben statt Browser-Weiss — sonst bleibt der Body im Dark-Mode hell
+  // (mat.theme setzt nur die Variablen, malt aber nichts).
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+}
 
 /* Chessground board styles */
 @import 'chessground/assets/chessground.base.css';

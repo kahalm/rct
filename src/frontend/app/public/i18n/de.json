@@ -3,7 +3,10 @@
     "title": "Real Chess Training",
     "language": "Sprache",
     "logout": "Abmelden",
-    "profile": "Profil"
+    "profile": "Profil",
+    "themeSystem": "System-Design",
+    "themeLight": "Helles Design",
+    "themeDark": "Dunkles Design"
   },
   "trial": {
     "title": "Real Chess Training — Trial",
@@ -110,6 +113,8 @@
       "title": "Konto",
       "username": "Benutzername",
       "email": "E-Mail",
+      "confirmPassword": "Aktuelles Passwort",
+      "confirmPasswordHint": "Zum Ändern der E-Mail-Adresse nötig",
       "save": "Speichern",
       "saved": "Profil gespeichert.",
       "usernameChangedHint": "Profil gespeichert — melde dich beim nächsten Login mit dem neuen Benutzernamen an."

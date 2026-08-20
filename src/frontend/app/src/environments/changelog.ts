@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.3.0';
+export const APP_VERSION = '0.3.1';
 
 export interface ChangelogEntry {
   version: string;
@@ -9,6 +9,11 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.3.1', date: '2026-08-20', changes: [
+    { en: 'Dark mode is here — and it is the default. The toolbar toggle cycles between dark, system and light; your choice is remembered on the device.', de: 'Dunkelmodus ist da — und Standard. Der Toolbar-Schalter wechselt zwischen Dunkel, System und Hell; die Wahl wird auf dem Gerät gemerkt.' },
+    { en: 'Security hardening from a full code review: changing your password keeps you signed in (fresh session token) while all other sessions end immediately; changing your email now requires your current password; password reset links are rate-limited per account and sent in the background.', de: 'Sicherheits-Härtung aus einem vollständigen Code-Review: Nach einer Passwort-Änderung bleibt man angemeldet (frisches Sitzungs-Token), alle anderen Sitzungen enden sofort; eine E-Mail-Änderung verlangt jetzt das aktuelle Passwort; Reset-Links sind pro Konto limitiert und werden im Hintergrund verschickt.' },
+    { en: 'Many smaller fixes: consistent error messages, deleted accounts are fully locked out everywhere, and account deletion is faster.', de: 'Viele kleinere Korrekturen: einheitliche Fehlermeldungen, gelöschte Konten sind überall vollständig gesperrt, und die Konto-Löschung ist schneller.' },
+  ] },
   { version: '0.3.0', date: '2026-08-20', changes: [
     { en: 'Profile page: change your name and email, change your password, and delete your account (with password confirmation; personal data is anonymized).', de: 'Profilseite: Name und E-Mail ändern, Passwort ändern und Konto löschen (mit Passwort-Bestätigung; persönliche Daten werden anonymisiert).' },
     { en: 'Forgot password: request a reset link by email and set a new password (link valid for 60 minutes, single use).', de: 'Passwort vergessen: Reset-Link per E-Mail anfordern und neues Passwort setzen (Link 60 Minuten gültig, einmalig).' },

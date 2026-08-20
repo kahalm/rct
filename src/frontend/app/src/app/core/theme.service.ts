@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 export type AppTheme = 'light' | 'dark' | 'system';
 
-const STORAGE_KEY = 'rookhub_app_theme';
+const STORAGE_KEY = 'rct_app_theme';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {

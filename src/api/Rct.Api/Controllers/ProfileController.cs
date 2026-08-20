@@ -34,6 +34,11 @@ public class ProfileController : BaseApiController
         {
             return Conflict(new { message = ex.Message });
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            // E-Mail-Aenderung ohne korrektes Passwort (Besitznachweis fuer den Recovery-Kanal).
+            return Unauthorized(new { message = ex.Message });
+        }
     }
 
     /// <summary>Konto loeschen (DSGVO-Anonymisierung) — verlangt das aktuelle Passwort.</summary>

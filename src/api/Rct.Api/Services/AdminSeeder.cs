@@ -49,7 +49,7 @@ public static class AdminSeeder
         {
             Username = username,
             Email = email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12),
+            PasswordHash = AuthService.HashPassword(password),
             SecurityStamp = AuthService.NewSecurityStamp(),
             IsAdmin = true,
         });

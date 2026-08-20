@@ -18,6 +18,12 @@ public static class AuthUserValidation
 
     private static string CacheKey(int userId) => $"user-auth:{userId}";
 
+    /// <summary>Cache-Eintrag eines Users verwerfen. MUSS nach jeder Security-Stamp-Rotation
+    /// (Passwort-Änderung/-Reset, Konto-Löschung) aufgerufen werden: sonst validiert ein altes
+    /// Token bis zu <see cref="CacheTtl"/> weiter bzw. ein FRISCHES Token (neuer Stamp) wird
+    /// gegen den gecachten alten Stamp abgelehnt (Login direkt nach Passwortwechsel → 401).</summary>
+    public static void Invalidate(IMemoryCache cache, int userId) => cache.Remove(CacheKey(userId));
+
     /// <summary>Gecachter Auth-Zustand eines Users: ob er existiert+aktiv ist und sein aktueller
     /// Security-Stamp (für die Token-Invalidierung nach Passwort-Reset/-Änderung).</summary>
     private sealed record UserAuthState(bool Active, string? SecurityStamp);

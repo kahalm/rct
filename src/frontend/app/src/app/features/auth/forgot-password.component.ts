@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { SnackbarService } from '../../core/snackbar.service';
+import { extractHttpErrorMessage } from '../../core/http-error';
 
 /**
  * „Passwort vergessen" — aus RookHub portiert und auf RCT reduziert. Der Server
@@ -71,9 +72,7 @@ export class ForgotPasswordComponent {
       },
       error: (err) => {
         this.loading = false;
-        const msg = err.error?.message
-          || (err.error?.errors && Object.values(err.error.errors).flat().join(' '))
-          || this.translate.instant('common.error');
+        const msg = extractHttpErrorMessage(err, this.translate.instant('common.error'));
         this.snackbar.warn(msg);
       }
     });

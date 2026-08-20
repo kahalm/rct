@@ -21,21 +21,37 @@ public class AuthService
 {
     private readonly AppDbContext _db;
     private readonly IConfiguration _config;
+    /// <summary>Für die Auth-Cache-Eviction nach Stamp-Rotationen (siehe AuthUserValidation.Invalidate).</summary>
+    private readonly IMemoryCache _cache;
 
     // Konstanter Dummy-Hash für timing-sichere Logins nicht existierender User
     // (gleicher BCrypt-Workfactor wie echte Hashes -> gleiche Verify-Dauer).
-    private const int BcryptWorkFactor = 12;  // explizit & versionierbar statt Library-Default (10)
-    private static readonly string DummyHash =
-        BCrypt.Net.BCrypt.HashPassword("rct-constant-time-dummy", BcryptWorkFactor);
+    // Workfactor explizit & versionierbar statt Library-Default (10); EINZIGE Definition —
+    // alle anderen Hash-Stellen (Reset/Delete/Seeder) gehen über HashPassword/SetPassword.
+    public const int BcryptWorkFactor = 12;
+    private static readonly string DummyHash = HashPassword("rct-constant-time-dummy");
 
-    // Prozessweiter Zähler der Login-Fehlversuche je Konto (Konstruktor bleibt bewusst auf
-    // AppDbContext + IConfiguration beschränkt; die Bremse braucht keine injizierte Abhängigkeit).
+    /// <summary>Passwort-Hash mit dem app-weiten Workfactor.</summary>
+    public static string HashPassword(string password)
+        => BCrypt.Net.BCrypt.HashPassword(password, BcryptWorkFactor);
+
+    /// <summary>Setzt ein neues Passwort UND rotiert den Security-Stamp — die beiden gehören
+    /// untrennbar zusammen (Rotation invalidiert alle bestehenden JWTs des Kontos).</summary>
+    public static void SetPassword(Models.AppUser user, string newPassword)
+    {
+        user.PasswordHash = HashPassword(newPassword);
+        user.SecurityStamp = NewSecurityStamp();
+    }
+
+    // Prozessweiter Zähler der Login-Fehlversuche je Konto (bewusst statisch statt injiziert:
+    // die Bremse ist Prozess-Zustand, kein Service).
     private static readonly IMemoryCache LoginFailures = new MemoryCache(new MemoryCacheOptions());
 
-    public AuthService(AppDbContext db, IConfiguration config)
+    public AuthService(AppDbContext db, IConfiguration config, IMemoryCache cache)
     {
         _db = db;
         _config = config;
+        _cache = cache;
     }
 
     /// <summary>Zeitfenster der Fehlversuchs-Zählung je Konto (sliding: anhaltendes Raten hält die Bremse aktiv).</summary>
@@ -64,6 +80,12 @@ public class AuthService
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
     {
+        // Reservierte Anonymisierungs-Platzhalter: verhindert, dass jemand „deleted_user_{id}"
+        // oder eine „…@rct.invalid"-Adresse vorregistriert und damit später die DSGVO-Löschung
+        // genau dieses Kontos blockiert (Unique-Index-Kollision, Review-Finding).
+        if (IsReservedIdentity(dto.Username, dto.Email))
+            throw new InvalidOperationException("This username or email is reserved.");
+
         var username = dto.Username ?? string.Empty;
 
         // E-Mail ist bei RCT PFLICHT: normalisieren (lowercase) und als non-null behandeln.
@@ -83,7 +105,7 @@ public class AuthService
         {
             Username = username,
             Email = email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password, BcryptWorkFactor),
+            PasswordHash = HashPassword(dto.Password),
             SecurityStamp = NewSecurityStamp()
         };
 
@@ -141,6 +163,9 @@ public class AuthService
         }
 
         LoginFailures.Remove(failureKey);   // erfolgreicher Login setzt die Bremse zurück
+        // Auth-Cache verwerfen: nach einem Passwort-Reset kann er noch den ALTEN Stamp halten —
+        // das frisch ausgestellte Token würde sonst bis zu 60 s lang abgelehnt (401 → Auto-Logout).
+        AuthUserValidation.Invalidate(_cache, user.Id);
 
         // Lazy-Backfill: Alt-User ohne Security-Stamp bekommen beim ersten Login einen — damit ihre
         // ab jetzt ausgegebenen Tokens den Stempel tragen und eine spätere Passwortänderung sie
@@ -160,7 +185,7 @@ public class AuthService
         };
     }
 
-    public async Task ChangePasswordAsync(int userId, ChangePasswordDto dto)
+    public async Task<AuthResponseDto> ChangePasswordAsync(int userId, ChangePasswordDto dto)
     {
         var user = await _db.AppUsers.FindAsync(userId)
             ?? throw new KeyNotFoundException("User not found.");
@@ -168,10 +193,33 @@ public class AuthService
         if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
             throw new UnauthorizedAccessException("Current password is incorrect.");
 
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword, BcryptWorkFactor);
-        // Security-Stamp rotieren → alle bisherigen JWTs (mit altem sstamp-Claim) werden ungültig.
-        user.SecurityStamp = NewSecurityStamp();
+        // Neues Passwort + Stamp-Rotation → alle bisherigen JWTs (alter sstamp-Claim) werden ungültig.
+        SetPassword(user, dto.NewPassword);
         await _db.SaveChangesAsync();
+
+        // Cache-Eintrag mit dem ALTEN Stamp verwerfen — sonst würde (a) das alte Token bis zu
+        // 60 s weiter validieren und (b) das gleich ausgestellte NEUE Token gegen den gecachten
+        // alten Stamp abgelehnt (Review-Finding: „neues Passwort geht nicht" direkt nach Wechsel).
+        AuthUserValidation.Invalidate(_cache, user.Id);
+
+        // FRISCHES Token mit dem neuen Stamp zurückgeben: der Aufrufer bleibt wirklich eingeloggt
+        // (vorher flog er nach Ablauf des Caches still raus, obwohl die UI „bleibt gültig" versprach).
+        return new AuthResponseDto
+        {
+            Token = GenerateJwt(user),
+            Username = user.Username,
+            UserId = user.Id,
+            IsAdmin = user.IsAdmin
+        };
+    }
+
+    /// <summary>Reservierte Identitäten der Konto-Anonymisierung (siehe ProfileService.DeleteAccountAsync):
+    /// Benutzername „deleted_user_&lt;zahl&gt;" und Adressen unter „@rct.invalid" darf niemand belegen.</summary>
+    internal static bool IsReservedIdentity(string? username, string? email)
+    {
+        if (username != null && System.Text.RegularExpressions.Regex.IsMatch(username.Trim(), @"^deleted_user_\d+$", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            return true;
+        return email != null && email.Trim().EndsWith("@rct.invalid", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Erzeugt einen frischen, kompakten Security-Stamp (Basis für die Token-Invalidierung).</summary>
