@@ -70,6 +70,9 @@ public class CalcBookDto
     /// <summary>Ist das Buch als Kalkulationsbuch markiert (<c>Book.IsCalculation</c>)? Der Modus
     /// funktioniert auch ohne das Flag (Direkt-Link), die Kursübersicht bietet ihn aber nur dann an.</summary>
     public bool IsCalculation { get; set; }
+    /// <summary>Hat DIESER User Kurszugang (CourseAccess/Tester/Admin)? Steuert die Startseite:
+    /// Freigeschaltete sehen „Thanks for joining" + Training-Knopf statt der Trial-CTAs.</summary>
+    public bool CourseAccess { get; set; }
     public List<CalcPositionListItemDto> Positions { get; set; } = new();
     /// <summary>Kapitelsummen in der Reihenfolge des ersten Auftretens in <see cref="Positions"/>.</summary>
     public List<CalcChapterSummaryDto> Chapters { get; set; } = new();

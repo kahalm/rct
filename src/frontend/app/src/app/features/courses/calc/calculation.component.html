@@ -166,7 +166,15 @@
            Der Vollbild-Knopf hatte vorher eine eigene Zeile ÜBER dem Brett und kostete Höhe —
            hier kostet er nur Breite, von der genug da ist. -->
       <div class="calc-rail">
-        <app-board-fullscreen-button [target]="fsTarget" />
+        <!-- APP-Vollbild (RookHub-Muster, User-Entscheid): die ganze Oberfläche — Brett,
+             Befehlszeile (Seitenspalte) und Linien — statt nur des Bretts. -->
+        @if (appFsSupported) {
+          <button mat-icon-button class="calc-rail-btn" (click)="toggleAppFullscreen()"
+                  [matTooltip]="(appFsActive ? 'app.fullscreenExit' : 'app.fullscreen') | translate"
+                  [attr.aria-label]="(appFsActive ? 'app.fullscreenExit' : 'app.fullscreen') | translate">
+            <mat-icon>{{ appFsActive ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+          </button>
+        }
         <button mat-icon-button class="calc-rail-btn" (click)="openSettings()"
                 [matTooltip]="'calc.settings.title' | translate"
                 [attr.aria-label]="'calc.settings.title' | translate">

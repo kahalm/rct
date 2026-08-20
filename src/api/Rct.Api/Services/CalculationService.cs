@@ -179,6 +179,7 @@ public class CalculationService
             BookId = book.Id,
             DisplayName = book.DisplayName,
             IsCalculation = book.IsCalculation,
+            CourseAccess = hasCourse,
             Positions = positions,
             Chapters = chapters,
             Points = chapters.Sum(c => c.Points),

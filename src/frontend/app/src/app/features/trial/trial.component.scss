@@ -30,3 +30,7 @@
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
   a { color: inherit; }
 }
+.thanks {
+  display: flex; align-items: center; gap: 8px; margin: 12px 2px 0; font-weight: 500;
+  mat-icon { color: #f5a623; }
+}

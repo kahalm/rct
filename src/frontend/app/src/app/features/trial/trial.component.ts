@@ -63,10 +63,26 @@ export class TrialComponent implements OnInit, OnDestroy {
 
   /** Trial starten — beim ALLERERSTEN Mal erst die Guidelines als Popup (einmalig). */
   startTrial(): void {
+    this.launchTrainer({});
+  }
+
+  /** Freigeschaltete: direkt ins NEUESTE Kapitel (letztes der sichtbaren Kapitelliste —
+   *  Kapitel entstehen chronologisch; der Trainer versteht ?chapter= nachsichtig). */
+  startTraining(): void {
+    const newest = this.newestChapter;
+    this.launchTrainer(newest ? { chapter: newest } : {});
+  }
+
+  private get newestChapter(): string | null {
+    const named = (this.book?.chapters ?? []).filter(c => !!c.chapter);
+    return named.length ? named[named.length - 1].chapter : null;
+  }
+
+  private launchTrainer(queryParams: Record<string, string>): void {
     let seen = false;
     try { seen = localStorage.getItem(GUIDELINES_SEEN_KEY) === '1'; } catch {}
     if (seen) {
-      this.router.navigate(['/courses', this.bookId, 'calc']);
+      this.router.navigate(['/courses', this.bookId, 'calc'], { queryParams });
       return;
     }
     const ref = this.dialog.open<GuidelinesDialogComponent, GuidelinesDialogData, string>(
@@ -74,7 +90,7 @@ export class TrialComponent implements OnInit, OnDestroy {
     this.subs.add(ref.afterClosed().subscribe(result => {
       // „Gezeigt" gilt unabhängig vom Knopf — einmalig heißt einmalig.
       try { localStorage.setItem(GUIDELINES_SEEN_KEY, '1'); } catch {}
-      if (result === 'start') this.router.navigate(['/courses', this.bookId, 'calc']);
+      if (result === 'start') this.router.navigate(['/courses', this.bookId, 'calc'], { queryParams });
     }));
   }
 

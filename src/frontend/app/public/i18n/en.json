@@ -9,7 +9,9 @@
     "menu": "Menu",
     "trial": "Trial",
     "addChapter": "Add chapter",
-    "users": "Users"
+    "users": "Users",
+    "fullscreen": "Fullscreen",
+    "fullscreenExit": "Exit fullscreen (Esc)"
   },
   "trial": {
     "title": "Real Chess Training — Trial",
@@ -54,7 +56,9 @@
     "points": "{{points}} / {{max}} pts",
     "loadFailed": "Could not load the trial.",
     "product": "Get Real Chess Training",
-    "showGuidelines": "Read the guidelines"
+    "showGuidelines": "Read the guidelines",
+    "thanks": "Thanks for joining Real Chess Training!",
+    "training": "Training"
   },
   "auth": {
     "login": {
@@ -289,7 +293,7 @@
     }
   },
   "courses": {
-    "noChapter": "(no chapter)"
+    "noChapter": "Trial"
   },
   "puzzles": {
     "theme": {

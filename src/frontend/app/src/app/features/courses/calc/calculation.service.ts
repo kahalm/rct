@@ -51,6 +51,8 @@ export interface CalcBook {
   bookId: number;
   displayName: string;
   isCalculation: boolean;
+  /** Kurszugang DIESES Users (Freischaltung/Tester/Admin) — steuert die Startseite. */
+  courseAccess?: boolean;
   positions: CalcPositionListItem[];
   /** Summen je Kapitel. Fehlen sie, rechnet die Ansicht sie aus den Zeilen selbst. */
   chapters?: CalcChapterSummary[];

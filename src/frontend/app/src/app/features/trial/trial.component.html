@@ -6,22 +6,30 @@
     </mat-card-header>
 
     <mat-card-content>
-      <!-- ===== Zwei Wege: das volle Programm (extern) oder das Trial hier ===== -->
-      <div class="trial-cta">
-        <a mat-stroked-button class="cta-btn" [href]="productUrl" target="_blank" rel="noopener">
-          <mat-icon>open_in_new</mat-icon> {{ 'trial.product' | translate }}
-        </a>
-        @if (loading) {
-          <mat-spinner diameter="28"></mat-spinner>
-        } @else if (loadError) {
-          <p class="load-error">{{ 'trial.loadFailed' | translate }}</p>
-        } @else {
+      @if (loading) {
+        <div class="trial-cta"><mat-spinner diameter="28"></mat-spinner></div>
+      } @else if (loadError) {
+        <p class="load-error">{{ 'trial.loadFailed' | translate }}</p>
+      } @else if (book?.courseAccess) {
+        <!-- ===== Freigeschaltet: Dank + EIN Training-Knopf (neuestes Kapitel) ===== -->
+        <p class="thanks"><mat-icon>celebration</mat-icon> {{ 'trial.thanks' | translate }}</p>
+        <div class="trial-cta">
+          <button mat-raised-button color="primary" class="cta-btn start-btn" (click)="startTraining()">
+            <mat-icon>play_arrow</mat-icon> {{ 'trial.training' | translate }}
+          </button>
+        </div>
+      } @else {
+        <!-- ===== Trial-User: das volle Programm (extern) oder das Trial hier ===== -->
+        <div class="trial-cta">
+          <a mat-stroked-button class="cta-btn" [href]="productUrl" target="_blank" rel="noopener">
+            <mat-icon>open_in_new</mat-icon> {{ 'trial.product' | translate }}
+          </a>
           <button mat-raised-button color="primary" class="cta-btn start-btn" (click)="startTrial()">
             <mat-icon>play_arrow</mat-icon>
             {{ (chosenCount > 0 ? 'trial.continue' : 'trial.start') | translate }}
           </button>
-        }
-      </div>
+        </div>
+      }
       @if (!loading && !loadError && positionCount > 0) {
         <p class="progress-line">
           {{ 'trial.progress' | translate:{ chosen: chosenCount, total: positionCount } }}

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef, HostBinding, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,6 +13,7 @@ import { LocaleService } from './core/locale.service';
 import { ThemeService } from './core/theme.service';
 import { FullscreenOverlayService } from './shared/fullscreen/fullscreen-overlay.service';
 import { environment } from '../environments/environment';
+import { exitFullscreen, isFullscreen, onFullscreenChange } from './shared/fullscreen/fullscreen.util';
 
 /**
  * App-Shell nach RookHub-Muster („UI-Entrümpelung"): die Toolbar trägt nur Marke + ☰-Menü —
@@ -70,6 +71,15 @@ import { environment } from '../environments/environment';
         </button>
       }
     </mat-toolbar>
+    @if (appFullscreen) {
+      <!-- Im App-Vollbild sind Kopf- und Fußzeile ausgeblendet (maximaler Platz fürs Brett) —
+           dieser schwebende Knopf ist neben Esc der Weg zurück (RookHub-Muster). -->
+      <button class="app-fs-exit" (click)="exitAppFullscreen()"
+              [attr.title]="'app.fullscreenExit' | translate"
+              [attr.aria-label]="'app.fullscreenExit' | translate">
+        <mat-icon>fullscreen_exit</mat-icon>
+      </button>
+    }
     <main class="rct-main">
       <router-outlet></router-outlet>
     </main>
@@ -77,6 +87,25 @@ import { environment } from '../environments/environment';
   `,
   styles: [`
     :host { display: flex; flex-direction: column; min-height: 100vh; }
+    /* App-Vollbild: Kopf- und Fußleiste weg, der Inhalt (v. a. das Brett) bekommt den ganzen
+       Schirm. Gesteuert über die Host-Klasse (JS-Flag), nicht über :root:fullscreen — so zählt
+       ein einzelnes Brett im Vollbild nicht mit. (RookHub-Muster.) */
+    :host(.app-fullscreen) .rct-toolbar,
+    :host(.app-fullscreen) .rct-footer { display: none; }
+    .app-fs-exit {
+      position: fixed;
+      top: 6px; right: 6px;
+      z-index: 1000;
+      width: 30px; height: 30px;
+      display: grid; place-items: center;
+      padding: 0; border: 0; border-radius: 6px;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.35);
+      color: #fff;
+      opacity: 0.35;
+      transition: opacity 0.12s ease-in-out;
+    }
+    .app-fs-exit:hover, .app-fs-exit:focus-visible { opacity: 1; background: rgba(0, 0, 0, 0.6); }
     .rct-toolbar { position: sticky; top: 0; z-index: 100; }
     .brand { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; font-weight: 500; }
     .spacer { flex: 1 1 auto; }
@@ -85,17 +114,32 @@ import { environment } from '../environments/environment';
     .rct-footer { text-align: center; padding: 10px; font-size: 0.75rem; opacity: 0.5; }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   readonly version = environment.version;
+
+  /** App-Vollbild (GANZE GUI im Browser-Vollbild): blendet Kopf-/Fußzeile aus. Ein einzelnes
+   *  Brett im Vollbild zählt bewusst NICHT (dort ist die App ohnehin unsichtbar). */
+  @HostBinding('class.app-fullscreen') appFullscreen = false;
 
   constructor(
     public auth: AuthService,
     public theme: ThemeService,
     locale: LocaleService,
+    private destroyRef: DestroyRef,
     // App-weit instanziieren (siehe Klassen-Doku) — Referenz genügt.
     _fullscreenOverlay: FullscreenOverlayService,
   ) {
     locale.init();   // English only — init setzt 'en' (locale.service)
+  }
+
+  ngOnInit(): void {
+    // Zustand nachführen — egal ob der Wechsel vom Rail-Knopf im Trainer, Esc oder F11 kam.
+    const off = onFullscreenChange(() => this.appFullscreen = isFullscreen(document.documentElement));
+    this.destroyRef.onDestroy(off);
+  }
+
+  exitAppFullscreen(): void {
+    void exitFullscreen();
   }
 
   // Icon/Tooltip zeigen die AKTIVE Einstellung (RookHub-Muster); Klick zyklt

@@ -41,6 +41,7 @@ import { CalcGradeDialogComponent, CalcGradeDialogResult } from './calc-grade-di
 import { CalcSettingsDialogComponent } from './calc-settings-dialog.component';
 import { CalcTimelimitDialogComponent } from './calc-timelimit-dialog.component';
 import { BoardFullscreenButtonComponent } from '../../../shared/fullscreen/board-fullscreen-button.component';
+import { fullscreenSupported, isFullscreen, onFullscreenChange, toggleFullscreen } from '../../../shared/fullscreen/fullscreen.util';
 import { GuidelinesDialogComponent, GuidelinesDialogData } from '../../trial/guidelines-dialog.component';
 import { TRIAL_VIDEO_URL } from '../../trial/trial.component';
 import {
@@ -509,6 +510,15 @@ export class CalculationComponent implements OnInit, OnDestroy {
       GuidelinesDialogComponent, { data: { mode: 'info' }, maxWidth: '720px', autoFocus: false });
   }
 
+  // ===== App-Vollbild (RookHub-Muster): Rail-Knopf schickt die GANZE GUI ins Vollbild =====
+  readonly appFsSupported = fullscreenSupported();
+  appFsActive = false;
+  private appFsOff?: () => void;
+
+  toggleAppFullscreen(): void {
+    void toggleFullscreen(document.documentElement);
+  }
+
   private static readonly MODE_CLASS = 'calc-mode';
 
   /** Beobachtet die Breite der Navigationsleiste — die Befehlszeile hält genau so viel frei. */
@@ -517,7 +527,13 @@ export class CalculationComponent implements OnInit, OnDestroy {
   private enterMode(): void {
     if (typeof document === 'undefined') return;
     document.body.classList.add(CalculationComponent.MODE_CLASS);
-    const nav = document.querySelector('app-navbar');
+    if (this.appFsSupported && !this.appFsOff) {
+      this.appFsOff = onFullscreenChange(() => this.appFsActive = isFullscreen(document.documentElement));
+    }
+    // RCTs Kopfzeile ist ein mat-toolbar.rct-toolbar direkt in app-root — NICHT RookHubs
+    // <app-navbar> (dieser tote Selektor ließ --calc-nav-w auf 0 und die schwebende Leiste
+    // überlappte den letzten Knopf der Befehlszeile, Review-Finding-Klasse „Port-Selektor").
+    const nav = document.querySelector('.rct-toolbar');
     if (!nav || typeof ResizeObserver === 'undefined') return;
     // GEMESSEN statt geraten: die Breite hängt an Sprache, Anmeldezustand und Schriftgröße —
     // ein fester Wert läge in der Hälfte der Fälle daneben und die Zeile liefe unter die Leiste.
@@ -535,6 +551,8 @@ export class CalculationComponent implements OnInit, OnDestroy {
     if (typeof document === 'undefined') return;
     this.navResize?.disconnect();
     this.navResize = undefined;
+    this.appFsOff?.();
+    this.appFsOff = undefined;
     document.body.classList.remove(CalculationComponent.MODE_CLASS);
     document.body.style.removeProperty('--calc-nav-w');
   }
