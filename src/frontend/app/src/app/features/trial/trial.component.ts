@@ -36,7 +36,6 @@ const GUIDELINES_SEEN_KEY = 'rct_trial_guidelines_seen';
 })
 export class TrialComponent implements OnInit, OnDestroy {
   readonly bookId = TRIAL_BOOK_ID;
-  readonly videoUrl = TRIAL_VIDEO_URL;
   readonly productUrl = PRODUCT_URL;
 
   book: CalcBook | null = null;
@@ -96,11 +95,6 @@ export class TrialComponent implements OnInit, OnDestroy {
 
   get positionCount(): number {
     return this.book?.positions.length ?? 0;
-  }
-
-  /** Alle Stellungen festgelegt → der Review-Schritt (Video) ist dran. */
-  get done(): boolean {
-    return this.positionCount > 0 && this.chosenCount >= this.positionCount;
   }
 
   get points(): number { return this.book?.points ?? 0; }

@@ -272,6 +272,22 @@
           </mat-card-content>
         </mat-card>
 
+        <!-- ===== Kapitel-Review (Breakdown-Video) =====
+             NUR an der LETZTEN Stellung des Kapitels (User-Entscheid: nicht auf der Startseite).
+             Trial-Stellungen (ohne Kapitel) haben das feste Trial-Video; Kapitel zeigen ihr im
+             Authoring hinterlegtes Video — ohne hinterlegtes Video kein Block. -->
+        @if (isLastInChapter && reviewVideoUrl) {
+          <mat-card class="calc-video-review" [class.calc-video-review--ready]="chapterAllChosen">
+            <mat-card-content>
+              <h3 class="calc-video-title"><mat-icon>smart_display</mat-icon> {{ 'calc.videoReview.title' | translate }}</h3>
+              <p>{{ (chapterAllChosen ? 'calc.videoReview.ready' : 'calc.videoReview.later') | translate }}</p>
+              <a mat-stroked-button [href]="reviewVideoUrl" target="_blank" rel="noopener">
+                <mat-icon>open_in_new</mat-icon> {{ 'calc.videoReview.watch' | translate }}
+              </a>
+            </mat-card-content>
+          </mat-card>
+        }
+
         <!-- Werkzeug erscheint am Werkstück: die Symbole wirken auf EINEN ausgewählten Zug.
              Solange keiner gewählt ist, bestand die Karte aus einer Überschrift und der
              Aufforderung, etwas anderes zu tun — sie erscheint jetzt erst mit der Auswahl. -->

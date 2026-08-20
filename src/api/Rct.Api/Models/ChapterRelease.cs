@@ -28,4 +28,9 @@ public class ChapterRelease
 
     /// <summary>Ab wann TESTER das Kapitel sehen (typisch früher als <see cref="ReleaseAt"/>).</summary>
     public DateTime? TesterReleaseAt { get; set; }
+
+    /// <summary>Breakdown-/Review-Video des Kapitels (YouTube-URL) — erscheint im Trainer an der
+    /// LETZTEN Stellung des Kapitels; null = kein Review-Block fuer dieses Kapitel.</summary>
+    [MaxLength(500)]
+    public string? VideoUrl { get; set; }
 }

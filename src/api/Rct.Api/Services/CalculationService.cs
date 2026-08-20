@@ -69,13 +69,17 @@ public class CalculationService
     {
         var row = await _db.AppUsers.Where(u => u.Id == userId)
             .Select(u => new { u.CourseAccess, u.IsTester }).FirstOrDefaultAsync(ct);
-        return (row?.CourseAccess ?? false, row?.IsTester ?? false);
+        // Tester haben IMMER Kurszugang (User-Entscheid) — das Tester-Flag allein genuegt.
+        var isTester = row?.IsTester ?? false;
+        return ((row?.CourseAccess ?? false) || isTester, isTester);
     }
 
     /// <summary>Terminlogik eines Release-Eintrags: Allgemeinheit ab ReleaseAt, Tester schon ab
     /// TesterReleaseAt; ein fehlender Eintrag (null) heisst „sofort frei".</summary>
     private static bool IsChapterReleased(ChapterRelease? release, bool isTester, DateTime now)
         => release == null
+           // Eintrag ganz ohne Termine (z. B. nur VideoUrl gesetzt) = sofort frei.
+           || (release.ReleaseAt == null && release.TesterReleaseAt == null)
            || (release.ReleaseAt != null && release.ReleaseAt <= now)
            || (isTester && release.TesterReleaseAt != null && release.TesterReleaseAt <= now);
 
@@ -115,6 +119,7 @@ public class CalculationService
                 && (bp.Chapter == null
                     || (hasCourse && (isAdmin || !_db.ChapterReleases.Any(r =>
                         r.BookId == bookId && r.Chapter == bp.Chapter
+                        && !(r.ReleaseAt == null && r.TesterReleaseAt == null)
                         && !(r.ReleaseAt != null && r.ReleaseAt <= now)
                         && !(isTester && r.TesterReleaseAt != null && r.TesterReleaseAt <= now))))))
             .OrderBy(bp => bp.Round.Length).ThenBy(bp => bp.Round).ThenBy(bp => bp.Id)
@@ -155,6 +160,20 @@ public class CalculationService
         }
 
         var chapters = SummarizeChapters(positions);
+
+        // Review-Videos je Kapitel — nur fuer Kapitel, die der User ueberhaupt sieht (die
+        // Summaries stammen aus den bereits GEFILTERTEN Positionen; unsichtbare Kapitel
+        // leaken so nichts).
+        var videos = await _db.ChapterReleases
+            .Where(r => r.BookId == bookId && r.VideoUrl != null)
+            .Select(r => new { r.Chapter, r.VideoUrl })
+            .ToListAsync(ct);
+        foreach (var v in videos)
+        {
+            var sum = chapters.FirstOrDefault(c => c.Chapter == v.Chapter);
+            if (sum != null) sum.VideoUrl = v.VideoUrl;
+        }
+
         return new CalcBookDto
         {
             BookId = book.Id,
@@ -487,7 +506,8 @@ public class CalculationService
     /// Stellungen zurück. Buch muss existieren und ein Kalkulationsbuch sein (sonst 404).</summary>
     public async Task<int> AddChapterPositionsAsync(int bookId, string chapter,
         IReadOnlyList<FenListParser.ParsedFen> positions,
-        DateTime? releaseAt = null, DateTime? testerReleaseAt = null, CancellationToken ct = default)
+        DateTime? releaseAt = null, DateTime? testerReleaseAt = null, string? videoUrl = null,
+        CancellationToken ct = default)
     {
         var isCalc = await _db.Books.Where(b => b.Id == bookId).Select(b => (bool?)b.IsCalculation).FirstOrDefaultAsync(ct);
         if (isCalc != true) throw new KeyNotFoundException("Book not found.");
@@ -516,10 +536,10 @@ public class CalculationService
             });
             next++;
         }
-        // Freischalt-Termine: nur anfassen, wenn beim Anlegen welche mitgegeben wurden —
-        // ein Nachschub ohne Termine laesst bestehende Termine unveraendert.
-        if (releaseAt != null || testerReleaseAt != null)
-            await UpsertChapterReleaseAsync(bookId, name, releaseAt, testerReleaseAt, ct);
+        // Termine/Video: nur anfassen, wenn beim Anlegen etwas mitgegeben wurde —
+        // ein Nachschub ohne Angaben laesst bestehende Metadaten unveraendert.
+        if (releaseAt != null || testerReleaseAt != null || !string.IsNullOrWhiteSpace(videoUrl))
+            await UpsertChapterReleaseAsync(bookId, name, releaseAt, testerReleaseAt, videoUrl, ct);
 
         await _db.SaveChangesAsync(ct);
         return positions.Count;
@@ -544,6 +564,7 @@ public class CalculationService
                 Positions = c.Count,
                 ReleaseAt = byChapter.TryGetValue(c.Chapter, out var r) ? r.ReleaseAt : null,
                 TesterReleaseAt = byChapter.TryGetValue(c.Chapter, out var r2) ? r2.TesterReleaseAt : null,
+                VideoUrl = byChapter.TryGetValue(c.Chapter, out var r3) ? r3.VideoUrl : null,
             })
             .ToList();
     }
@@ -551,24 +572,24 @@ public class CalculationService
     /// <summary>Freischalt-Termine eines Kapitels setzen; beide null loescht den Eintrag
     /// (Kapitel sofort fuer alle Freigeschalteten sichtbar). 404 bei unbekanntem Kapitel.</summary>
     public async Task SetChapterReleaseAsync(int bookId, string chapter,
-        DateTime? releaseAt, DateTime? testerReleaseAt, CancellationToken ct = default)
+        DateTime? releaseAt, DateTime? testerReleaseAt, string? videoUrl, CancellationToken ct = default)
     {
         await EnsureBookAccessAsync(bookId, ct);
         if (!await _db.BookPuzzles.AnyAsync(bp => bp.BookId == bookId && bp.Chapter == chapter, ct))
             throw new KeyNotFoundException("Chapter not found.");
 
-        if (releaseAt == null && testerReleaseAt == null)
+        if (releaseAt == null && testerReleaseAt == null && string.IsNullOrWhiteSpace(videoUrl))
         {
             await _db.ChapterReleases
                 .Where(r => r.BookId == bookId && r.Chapter == chapter).ExecuteDeleteAsync(ct);
             return;
         }
-        await UpsertChapterReleaseAsync(bookId, chapter, releaseAt, testerReleaseAt, ct);
+        await UpsertChapterReleaseAsync(bookId, chapter, releaseAt, testerReleaseAt, videoUrl, ct);
         await _db.SaveChangesAsync(ct);
     }
 
     private async Task UpsertChapterReleaseAsync(int bookId, string chapter,
-        DateTime? releaseAt, DateTime? testerReleaseAt, CancellationToken ct)
+        DateTime? releaseAt, DateTime? testerReleaseAt, string? videoUrl, CancellationToken ct)
     {
         var release = await _db.ChapterReleases
             .FirstOrDefaultAsync(r => r.BookId == bookId && r.Chapter == chapter, ct);
@@ -579,6 +600,7 @@ public class CalculationService
         }
         release.ReleaseAt = releaseAt;
         release.TesterReleaseAt = testerReleaseAt;
+        release.VideoUrl = string.IsNullOrWhiteSpace(videoUrl) ? null : videoUrl.Trim();
     }
 
     /// <summary>

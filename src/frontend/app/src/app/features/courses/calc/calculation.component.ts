@@ -42,6 +42,7 @@ import { CalcSettingsDialogComponent } from './calc-settings-dialog.component';
 import { CalcTimelimitDialogComponent } from './calc-timelimit-dialog.component';
 import { BoardFullscreenButtonComponent } from '../../../shared/fullscreen/board-fullscreen-button.component';
 import { GuidelinesDialogComponent, GuidelinesDialogData } from '../../trial/guidelines-dialog.component';
+import { TRIAL_VIDEO_URL } from '../../trial/trial.component';
 import {
   CalcTimerDialogComponent, CalcTimerDialogData, CalcTimerDialogResult,
 } from './calc-timer-dialog.component';
@@ -1238,6 +1239,24 @@ export class CalculationComponent implements OnInit, OnDestroy {
   get doneCount(): number { return this.chapterPositions.filter(p => p.hasTree).length; }
   /** Stellungen des Kapitels — Nenner von „3 / 6" und „bearbeitet". */
   get positionCount(): number { return this.chapterPositions.length; }
+
+  /** Steht der Cursor auf der LETZTEN Stellung des aktuellen Kapitels? (Dort haengt der Review.) */
+  get isLastInChapter(): boolean { return this.positionCount > 0 && this.index === this.positionCount - 1; }
+
+  /** Alle Stellungen des Kapitels festgelegt → Review „ready" (Golden Rule zaehlt Festlegungen). */
+  get chapterAllChosen(): boolean {
+    return this.positionCount > 0 && this.chapterPositions.every(p => !!p.chosenSan);
+  }
+
+  /** Review-Video des aktuellen Kapitels: Trial (ohne Kapitel) = festes Breakdown-Video,
+   *  Kapitel = im Authoring hinterlegte URL (null = kein Review-Block).
+   *  ROHER Kapitelname der Gruppe — chapterName ist der ANZEIGEname und liefert für die
+   *  kapitel-lose Gruppe „(no chapter)", nie leer. */
+  get reviewVideoUrl(): string | null {
+    const raw = this.chapter?.chapter || null;
+    if (!raw) return TRIAL_VIDEO_URL;
+    return this.book?.chapters?.find(c => c.chapter === raw)?.videoUrl ?? null;
+  }
   get whiteToMoveAtCursor(): boolean { return whiteToMove(this.cursorFen || this.startFen); }
 
   /**

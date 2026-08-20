@@ -53,12 +53,6 @@
     "progress": "{{chosen}} of {{total}} positions committed",
     "points": "{{points}} / {{max}} pts",
     "loadFailed": "Could not load the trial.",
-    "review": {
-      "title": "Review",
-      "later": "Work through all six positions first — then audit your thinking with the breakdown video.",
-      "ready": "All positions committed — time for the breakdown video.",
-      "watch": "Watch the breakdown video"
-    },
     "product": "Get Real Chess Training",
     "showGuidelines": "Read the guidelines"
   },
@@ -286,7 +280,13 @@
       "review": "Then take a physical break and watch the breakdown video on the trial page to audit your thought process.",
       "ok": "Got it"
     },
-    "guidelines": "Guidelines"
+    "guidelines": "Guidelines",
+    "videoReview": {
+      "title": "Review",
+      "later": "Commit one choice for every position in this chapter first — then audit your thinking with the breakdown video.",
+      "ready": "All positions committed — time for the breakdown video.",
+      "watch": "Watch the breakdown video"
+    }
   },
   "courses": {
     "noChapter": "(no chapter)"
@@ -318,7 +318,8 @@
       "colPositions": "Positions",
       "noChapters": "No chapters yet.",
       "releaseSaved": "Release schedule saved.",
-      "tableHint": "Clear both dates and save to release a chapter immediately."
+      "tableHint": "Clear both dates and save to release a chapter immediately.",
+      "videoUrl": "Review video (URL)"
     },
     "users": {
       "title": "Users",

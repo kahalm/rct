@@ -47,6 +47,9 @@ public class CalcChapterSummaryDto
     public int TreeCount { get; set; }
     /// <summary>Stellungen mit Festlegung (<c>ChosenSan</c> gesetzt).</summary>
     public int ChosenCount { get; set; }
+    /// <summary>Review-Video des Kapitels (nur gesetzt, wenn der User das Kapitel sieht) —
+    /// der Trainer zeigt es an der LETZTEN Stellung des Kapitels.</summary>
+    public string? VideoUrl { get; set; }
     /// <summary>Stellungen mit vergebener Selbstbewertung (<c>Grade != null</c>).</summary>
     public int RatedCount { get; set; }
     /// <summary>Summe der abgeleiteten Punkte (unbewertete Stellungen zählen nicht mit).</summary>
@@ -215,6 +218,9 @@ public class AddChapterDto
     public DateTime? ReleaseAt { get; set; }
     /// <summary>Fruehere Freischaltung fuer Tester (UTC); null = nicht terminiert.</summary>
     public DateTime? TesterReleaseAt { get; set; }
+    /// <summary>Review-Video des Kapitels (YouTube-URL); leer = kein Review-Block.</summary>
+    [System.ComponentModel.DataAnnotations.MaxLength(500)]
+    public string? VideoUrl { get; set; }
 }
 
 /// <summary>Kapitel-Uebersicht fuers Admin-Authoring: Name, Umfang, Freischalt-Termine.</summary>
@@ -224,6 +230,7 @@ public class ChapterInfoDto
     public int Positions { get; set; }
     public DateTime? ReleaseAt { get; set; }
     public DateTime? TesterReleaseAt { get; set; }
+    public string? VideoUrl { get; set; }
 }
 
 /// <summary>Freischalt-Termine eines Kapitels setzen (Admin). Beide null = Eintrag loeschen
@@ -234,6 +241,8 @@ public class SetChapterReleaseDto
     public string Chapter { get; set; } = string.Empty;
     public DateTime? ReleaseAt { get; set; }
     public DateTime? TesterReleaseAt { get; set; }
+    [System.ComponentModel.DataAnnotations.MaxLength(500)]
+    public string? VideoUrl { get; set; }
 }
 
 /// <summary>Ergebnis des Kapitel-Authorings: angelegte Stellungen + nicht verwertbare Zeilen.</summary>

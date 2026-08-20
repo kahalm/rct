@@ -30,6 +30,8 @@ export interface CalcPositionListItem {
 export interface CalcChapterSummary {
   /** null = Sammelgruppe „ohne Kapitel". */
   chapter: string | null;
+  /** Review-Video des Kapitels (nur geliefert, wenn der User das Kapitel sieht). */
+  videoUrl?: string | null;
   /** Zahl der BEWERTETEN Stellungen des Kapitels (>0 ⇒ „vom Nutzer bewertet"). */
   ratedCount?: number;
   /** Summe der erreichten Punkte. */

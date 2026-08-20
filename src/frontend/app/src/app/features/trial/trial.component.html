@@ -36,14 +36,6 @@
       </p>
     </mat-card-content>
 
-    <!-- ===== Review (Video) — erst nach dem Durcharbeiten hervorgehoben ===== -->
-    <mat-card-footer class="review" [class.review--ready]="done">
-      <h3 class="sec"><mat-icon>smart_display</mat-icon> {{ 'trial.review.title' | translate }}</h3>
-      <p>{{ (done ? 'trial.review.ready' : 'trial.review.later') | translate }}</p>
-      <a mat-stroked-button [href]="videoUrl" target="_blank" rel="noopener" [disabled]="!done && chosenCount === 0">
-        <mat-icon>open_in_new</mat-icon> {{ 'trial.review.watch' | translate }}
-      </a>
-    </mat-card-footer>
   </mat-card>
 
 </div>

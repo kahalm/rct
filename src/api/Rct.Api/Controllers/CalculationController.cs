@@ -84,7 +84,7 @@ public class CalculationController : BaseApiController
         {
             if (parsed.Positions.Count > 0)
                 added = await _service.AddChapterPositionsAsync(bookId, dto.Chapter, parsed.Positions,
-                    dto.ReleaseAt, dto.TesterReleaseAt, ct);
+                    dto.ReleaseAt, dto.TesterReleaseAt, dto.VideoUrl, ct);
             else if (parsed.Errors.Count == 0)
                 return BadRequest(new { message = "No positions found." });
         }
@@ -112,7 +112,7 @@ public class CalculationController : BaseApiController
         if (!IsAdmin) return Forbid();
         try
         {
-            await _service.SetChapterReleaseAsync(bookId, dto.Chapter, dto.ReleaseAt, dto.TesterReleaseAt, ct);
+            await _service.SetChapterReleaseAsync(bookId, dto.Chapter, dto.ReleaseAt, dto.TesterReleaseAt, dto.VideoUrl, ct);
             return NoContent();
         }
         catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }

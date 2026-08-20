@@ -33,6 +33,7 @@ interface ChapterRow {
   positions: number;
   releaseAtLocal: string;
   testerReleaseAtLocal: string;
+  videoUrl: string;
 }
 
 /**
@@ -72,6 +73,11 @@ interface ChapterRow {
               <input matInput type="datetime-local" [(ngModel)]="testerReleaseAtLocal" [disabled]="authorBusy">
             </mat-form-field>
           </div>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'admin.author.videoUrl' | translate }}</mat-label>
+            <input matInput type="url" [(ngModel)]="videoUrlNew" maxlength="500" [disabled]="authorBusy"
+                   placeholder="https://www.youtube.com/watch?v=…">
+          </mat-form-field>
           <p class="hint">{{ 'admin.author.releaseHint' | translate }}</p>
           <button mat-raised-button color="primary" (click)="addChapter()"
                   [disabled]="authorBusy || !authorChapter.trim() || !authorFens.trim()">
@@ -108,6 +114,7 @@ interface ChapterRow {
                     <th>{{ 'admin.author.colPositions' | translate }}</th>
                     <th>{{ 'admin.author.releaseAt' | translate }}</th>
                     <th>{{ 'admin.author.testerReleaseAt' | translate }}</th>
+                    <th>{{ 'admin.author.videoUrl' | translate }}</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -118,6 +125,8 @@ interface ChapterRow {
                       <td>{{ c.positions }}</td>
                       <td><input class="dt" type="datetime-local" [(ngModel)]="c.releaseAtLocal" [disabled]="savingChapter === c.chapter"></td>
                       <td><input class="dt" type="datetime-local" [(ngModel)]="c.testerReleaseAtLocal" [disabled]="savingChapter === c.chapter"></td>
+                      <td><input class="dt video-input" type="url" [(ngModel)]="c.videoUrl" maxlength="500"
+                                 placeholder="https://…" [disabled]="savingChapter === c.chapter"></td>
                       <td>
                         <button mat-stroked-button (click)="saveRelease(c)" [disabled]="savingChapter === c.chapter">
                           {{ 'common.save' | translate }}
@@ -125,7 +134,7 @@ interface ChapterRow {
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="5" class="muted">{{ 'admin.author.noChapters' | translate }}</td></tr>
+                    <tr><td colspan="6" class="muted">{{ 'admin.author.noChapters' | translate }}</td></tr>
                   }
                 </tbody>
               </table>
@@ -150,6 +159,7 @@ interface ChapterRow {
     .chapters-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
     .chapters-table th { text-align: left; font-weight: 500; opacity: 0.7; padding: 8px 10px; border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent); }
     .chapters-table td { padding: 8px 10px; border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent); }
+    .video-input { min-width: 180px; }
     .dt { background: transparent; color: inherit; border: 1px solid color-mix(in srgb, currentColor 30%, transparent); border-radius: 6px; padding: 6px 8px; font: inherit; color-scheme: inherit; }
     .muted { opacity: 0.7; }
     .author-errors {
@@ -167,6 +177,7 @@ export class ChapterAuthoringComponent implements OnInit {
   /** Freischalt-Termine fuers NEUE Kapitel (datetime-local, lokale Zeit; leer = sofort). */
   releaseAtLocal = '';
   testerReleaseAtLocal = '';
+  videoUrlNew = '';
 
   chapters: ChapterRow[] = [];
   chaptersLoading = true;
@@ -184,7 +195,7 @@ export class ChapterAuthoringComponent implements OnInit {
 
   private loadChapters(): void {
     this.chaptersLoading = true;
-    this.http.get<{ chapter: string; positions: number; releaseAt: string | null; testerReleaseAt: string | null }[]>(
+    this.http.get<{ chapter: string; positions: number; releaseAt: string | null; testerReleaseAt: string | null; videoUrl: string | null }[]>(
       `/api/calculations/books/${TRIAL_BOOK_ID}/chapters`).subscribe({
       next: rows => {
         this.chapters = rows.map(r => ({
@@ -192,6 +203,7 @@ export class ChapterAuthoringComponent implements OnInit {
           positions: r.positions,
           releaseAtLocal: isoToLocal(r.releaseAt),
           testerReleaseAtLocal: isoToLocal(r.testerReleaseAt),
+          videoUrl: r.videoUrl ?? '',
         }));
         this.chaptersLoading = false;
       },
@@ -208,6 +220,7 @@ export class ChapterAuthoringComponent implements OnInit {
       chapter: row.chapter,
       releaseAt: localToIso(row.releaseAtLocal),
       testerReleaseAt: localToIso(row.testerReleaseAtLocal),
+      videoUrl: row.videoUrl.trim() || null,
     }).subscribe({
       next: () => {
         this.savingChapter = null;
@@ -231,6 +244,7 @@ export class ChapterAuthoringComponent implements OnInit {
         chapter, fenList: this.authorFens,
         releaseAt: localToIso(this.releaseAtLocal),
         testerReleaseAt: localToIso(this.testerReleaseAtLocal),
+        videoUrl: this.videoUrlNew.trim() || null,
       },
     ).subscribe({
       next: res => {
@@ -243,6 +257,7 @@ export class ChapterAuthoringComponent implements OnInit {
           this.authorFens = '';
           this.releaseAtLocal = '';
           this.testerReleaseAtLocal = '';
+          this.videoUrlNew = '';
           this.loadChapters();
         }
       },
