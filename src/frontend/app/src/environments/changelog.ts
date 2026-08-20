@@ -1,14 +1,21 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.3.2';
+export const APP_VERSION = '0.4.0';
 
 export interface ChangelogEntry {
   version: string;
   date: string;
-  changes: { en: string; de: string }[];
+  // App ist English-only (seit 0.4.0) — de bleibt optional fuer die Alt-Eintraege.
+  changes: { en: string; de?: string }[];
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.4.0', date: '2026-08-20', changes: [
+    { en: 'One unified top bar: in the calculation trainer the app navigation now floats on the command line (RookHub pattern) instead of stacking a second row above the board; the toolbar itself is decluttered — everything lives in one menu.' },
+    { en: 'Course access control: the six trial positions stay open for every account, but the course chapters are only visible to users the admin has unlocked. New admin page "Users" lists all accounts with search, filter and an unlock toggle.' },
+    { en: 'Chapter authoring moved to its own admin page (menu entry visible to admins only).' },
+    { en: 'The app is English-only now; the language switcher is gone.' },
+  ] },
   { version: '0.3.2', date: '2026-08-20', changes: [
     { en: 'Chapter authoring got smarter: comments in braces may now contain „|“, positions with impossible digit runs (like „44/…“) are rejected up front instead of failing later on the board, and skipped lines are listed with line number, reason and the original text.', de: 'Kapitel-Authoring verbessert: Kommentare in geschweiften Klammern dürfen jetzt „|“ enthalten, Stellungen mit unmöglichen Ziffernfolgen (etwa „44/…“) werden sofort abgelehnt statt später am Brett zu scheitern, und übersprungene Zeilen werden mit Zeilennummer, Grund und Originaltext aufgelistet.' },
     { en: 'Under the hood: the trial seeder no longer skips missing trial positions when chapters use the same round numbers, and long-expired password-reset tokens are cleaned up automatically.', de: 'Unter der Haube: Der Trial-Seeder überspringt fehlende Trial-Stellungen nicht mehr, wenn Kapitel dieselben Rundennummern verwenden, und längst abgelaufene Passwort-Reset-Tokens werden automatisch aufgeräumt.' },

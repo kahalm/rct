@@ -7,15 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { TranslateService } from '@ngx-translate/core';
-import { AuthService } from '../../core/auth.service';
-import { SnackbarService } from '../../core/snackbar.service';
 import { CalculationService, CalcBook } from '../courses/calc/calculation.service';
-import { extractHttpErrorMessage } from '../../core/http-error';
 
 /** Feste Buch-Id des Trial-Kalkulationsbuchs (vom RctSeeder als erstes Buch angelegt). */
 export const TRIAL_BOOK_ID = 1;
@@ -31,7 +23,7 @@ export const TRIAL_VIDEO_URL = 'https://www.youtube.com/watch?v=EgDwm7AOLTg';
   changeDetection: ChangeDetectionStrategy.Default,
   selector: 'app-trial',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, TranslatePipe],
+  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, TranslatePipe],
   templateUrl: './trial.component.html',
   styleUrls: ['./trial.component.scss'],
 })
@@ -45,13 +37,7 @@ export class TrialComponent implements OnInit, OnDestroy {
 
   private subs = new Subscription();
 
-  constructor(
-    private calc: CalculationService,
-    private http: HttpClient,
-    public auth: AuthService,
-    private snackbar: SnackbarService,
-    private translate: TranslateService,
-  ) {}
+  constructor(private calc: CalculationService) {}
 
   ngOnInit(): void {
     this.subs.add(this.calc.getBook(this.bookId).subscribe({
@@ -85,41 +71,4 @@ export class TrialComponent implements OnInit, OnDestroy {
   get points(): number { return this.book?.points ?? 0; }
   get maxPoints(): number { return this.book?.maxPoints ?? 0; }
 
-  // ===== Kapitel-Authoring (nur Admin) ======================================
-
-  authorChapter = '';
-  authorFens = '';
-  authorBusy = false;
-  /** Nicht verwertbare Memo-Zeilen des letzten Einfüge-Vorgangs (Zeilennummer + Grund + Originaltext) —
-   *  bleiben nach dem Anlegen sichtbar, damit der Admin die fehlerhaften Zeilen korrigieren kann. */
-  authorErrors: { lineNumber: number; reason: string; text?: string }[] = [];
-
-  /** Memo-Format wie RookHub: eine FEN je Zeile, optional „| Kommentar" bzw. „{Kommentar}".
-   *  Direkt-POST hier statt eines eigenen Services — es ist der einzige Authoring-Aufruf der App. */
-  addChapter(): void {
-    const chapter = this.authorChapter.trim();
-    if (!chapter || !this.authorFens.trim() || this.authorBusy) return;
-    this.authorBusy = true;
-    this.authorErrors = [];
-    this.http.post<{ added: number; errors: { lineNumber: number; reason: string; text?: string }[] }>(
-      `/api/calculations/books/${this.bookId}/chapters`,
-      { chapter, fenList: this.authorFens },
-    ).subscribe({
-      next: res => {
-        this.authorBusy = false;
-        this.authorErrors = res.errors;
-        const msg = this.translate.instant('trial.author.result', { added: res.added, errors: res.errors.length });
-        if (res.errors.length > 0) this.snackbar.warn(msg); else this.snackbar.quick(msg);
-        if (res.added > 0) {
-          this.authorChapter = '';
-          this.authorFens = '';
-          this.ngOnInit();   // Buch neu laden (Fortschritt/Kapitel aktualisieren)
-        }
-      },
-      error: (err) => {
-        this.authorBusy = false;
-        this.snackbar.warn(extractHttpErrorMessage(err, this.translate.instant('common.error')));
-      },
-    });
-  }
 }

@@ -62,6 +62,20 @@ public class CalculationService
             throw new KeyNotFoundException("Book not found.");
     }
 
+    /// <summary>Kurs-Freischaltung des Users (Admins immer). Kapitel-Stellungen sind nur mit
+    /// Freischaltung sichtbar/beschreibbar; die kapitel-losen Trial-Stellungen immer.</summary>
+    private async Task<bool> HasCourseAccessAsync(int userId, bool isAdmin, CancellationToken ct)
+        => isAdmin || await _db.AppUsers.Where(u => u.Id == userId)
+            .Select(u => u.CourseAccess).FirstOrDefaultAsync(ct);
+
+    /// <summary>Wirft 404 (nichts leaken), wenn die Position ein Kapitel traegt und der User keine
+    /// Kurs-Freischaltung hat — deckt auch geratene IDs ab (IDOR).</summary>
+    private async Task EnsureChapterAccessAsync(int userId, bool isAdmin, string? chapter, CancellationToken ct)
+    {
+        if (chapter != null && !await HasCourseAccessAsync(userId, isAdmin, ct))
+            throw new KeyNotFoundException("Position not found.");
+    }
+
     /// <summary>Kopf + leichte Stellungsliste eines Buchs (ohne FEN/Kommentar/Züge) inkl. Markierung,
     /// zu welchen Stellungen der Nutzer schon einen Baum gespeichert hat, der drei Trainings-Werte
     /// je Stellung (Festlegung/Zeit/Bewertungsstufe) und der SERVERSEITIG gerechneten Kapitelsummen
@@ -74,8 +88,10 @@ public class CalculationService
             .Select(b => new { b.Id, b.DisplayName, b.IsCalculation })
             .FirstAsync(ct);
 
+        // Ohne Kurs-Freischaltung nur die kapitel-losen Trial-Stellungen (Kapitel = der Kurs).
+        var hasCourse = await HasCourseAccessAsync(userId, isAdmin, ct);
         var positions = await _db.BookPuzzles
-            .Where(bp => bp.BookId == bookId)
+            .Where(bp => bp.BookId == bookId && (hasCourse || bp.Chapter == null))
             .OrderBy(bp => bp.Round.Length).ThenBy(bp => bp.Round).ThenBy(bp => bp.Id)
             .Select(bp => new CalcPositionListItemDto
             {
@@ -172,6 +188,7 @@ public class CalculationService
             ?? throw new KeyNotFoundException("Position not found.");
         var bookId = puzzle.BookId;
         await EnsureBookAccessAsync(bookId, ct);
+        await EnsureChapterAccessAsync(userId, isAdmin, puzzle.Chapter, ct);
 
         var tree = await _db.CalculationTrees
             .FirstOrDefaultAsync(t => t.UserId == userId && t.BookPuzzleId == bookPuzzleId, ct);
@@ -272,6 +289,7 @@ public class CalculationService
             ?? throw new KeyNotFoundException("Position not found.");
         var bookId = puzzle.BookId;
         await EnsureBookAccessAsync(bookId, ct);
+        await EnsureChapterAccessAsync(userId, isAdmin, puzzle.Chapter, ct);
 
         var tree = await _db.CalculationTrees
             .FirstOrDefaultAsync(t => t.UserId == userId && t.BookPuzzleId == bookPuzzleId, ct);

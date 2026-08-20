@@ -23,6 +23,11 @@ public class AppUser
 
     public bool IsAdmin { get; set; } = false;
 
+    /// <summary>Kurs-Freischaltung: Die 6 kapitel-losen Trial-Stellungen sieht JEDER eingeloggte
+    /// User; die Kurs-KAPITEL (Noel-Serie) sieht nur, wen der Admin freigeschaltet hat.
+    /// Admins sehen immer alles.</summary>
+    public bool CourseAccess { get; set; } = false;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>Gesetzt bei Löschung/Anonymisierung — solche Konten können sich nicht mehr einloggen.</summary>

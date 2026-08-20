@@ -1,12 +1,15 @@
 {
   "app": {
     "title": "Real Chess Training",
-    "language": "Language",
     "logout": "Sign out",
     "profile": "Profile",
     "themeSystem": "System theme",
     "themeLight": "Light theme",
-    "themeDark": "Dark theme"
+    "themeDark": "Dark theme",
+    "menu": "Menu",
+    "trial": "Trial",
+    "addChapter": "Add chapter",
+    "users": "Users"
   },
   "trial": {
     "title": "Real Chess Training — Trial",
@@ -55,19 +58,6 @@
       "later": "Work through all six positions first — then audit your thinking with the breakdown video.",
       "ready": "All positions committed — time for the breakdown video.",
       "watch": "Watch the breakdown video"
-    },
-    "author": {
-      "title": "Add chapter (admin)",
-      "hint": "One FEN per line — optionally „| comment“ or „{comment}“ after the FEN (same memo format as RookHub).",
-      "chapter": "Chapter name",
-      "fens": "Positions (one FEN per line)",
-      "add": "Add positions",
-      "result": "{{added}} positions added, {{errors}} lines skipped",
-      "line": "Line {{line}}",
-      "err": {
-        "invalid_fen": "not a valid FEN",
-        "too_many": "line limit reached (max 500 per paste) — remaining lines were skipped"
-      }
     }
   },
   "auth": {
@@ -302,6 +292,38 @@
     "theme": {
       "boardTheme": "Board Theme",
       "pieces": "Pieces"
+    }
+  },
+  "admin": {
+    "author": {
+      "title": "Add chapter",
+      "hint": "One FEN per line — optionally \"| comment\" or \"{comment}\" after the FEN.",
+      "chapter": "Chapter name",
+      "fens": "Positions (one FEN per line)",
+      "add": "Add positions",
+      "result": "{{added}} positions added, {{errors}} lines skipped",
+      "line": "Line {{line}}",
+      "err": {
+        "invalid_fen": "not a valid FEN",
+        "too_many": "line limit reached (max 500 per paste) — remaining lines were skipped"
+      }
+    },
+    "users": {
+      "title": "Users",
+      "search": "Search name or email",
+      "filter": "Course access filter",
+      "filterAll": "All",
+      "filterGranted": "Course unlocked",
+      "filterLocked": "No course access",
+      "count": "{{shown}} of {{total}} accounts shown · {{granted}} with course access",
+      "colUser": "User",
+      "colEmail": "Email",
+      "colRegistered": "Registered",
+      "colCourse": "Course access",
+      "granted": "Unlocked",
+      "locked": "Locked",
+      "isAdmin": "Administrator",
+      "empty": "No matching accounts."
     }
   }
 }

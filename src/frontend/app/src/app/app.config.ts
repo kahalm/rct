@@ -5,8 +5,6 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
-import { registerLocaleData } from '@angular/common';
-import localeDe from '@angular/common/locales/de';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth.interceptor';
@@ -15,7 +13,6 @@ import { resolveStartupLocale } from './core/locale.service';
 
 // Locale-Daten für Deutsch registrieren (en ist eingebaut), damit Date-/Zahlen-Pipes der
 // gewählten Sprache folgen. RCT spricht en/de.
-registerLocaleData(localeDe);
 
 export const appConfig: ApplicationConfig = {
   providers: [

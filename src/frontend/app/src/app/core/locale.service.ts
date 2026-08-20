@@ -5,7 +5,7 @@ const LANG_KEY = 'rct_lang';
 
 // Weltweit relevante Sprachen. Übersetzungen: public/i18n/<code>.json
 // (fehlende Keys fallen automatisch auf 'en' zurück).
-export const SUPPORTED_LANGS = ['en', 'de'] as const;
+export const SUPPORTED_LANGS = ['en'] as const;   // English only (Betreiber-Entscheid)
 export type AppLang = (typeof SUPPORTED_LANGS)[number];
 
 // Rechts-nach-links-Sprachen (Layout-Richtung via <html dir>).
@@ -15,7 +15,7 @@ const RTL_LANGS: readonly AppLang[] = [];
 // Nur die tatsächlich übersetzten Sprachen; alle anderen formatieren über 'en'
 // (vermeidet „Missing locale data"-Fehler bei nicht registrierten Locales). 'en' ist
 // in Angular eingebaut und muss nicht registriert werden.
-export const FORMAT_LOCALES: readonly string[] = ['en', 'de'];
+export const FORMAT_LOCALES: readonly string[] = ['en'];
 
 /**
  * Ermittelt die Start-Locale für `LOCALE_ID` (Bootstrap) — gleiche Quelle wie
@@ -45,7 +45,6 @@ export class LocaleService {
   // Label = Eigenbezeichnung der Sprache (im Switcher angezeigt). RCT spricht en/de.
   readonly languages: LangOption[] = [
     { code: 'en', label: 'English' },
-    { code: 'de', label: 'Deutsch' },
   ];
 
   /** In AppComponent vor dem Rendern aufrufen. */

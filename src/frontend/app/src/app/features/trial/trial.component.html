@@ -70,39 +70,4 @@
     </mat-card-footer>
   </mat-card>
 
-  <!-- ===== Kapitel-Authoring (nur Admin): Memo-Format wie RookHub ===== -->
-  @if (auth.isAdmin) {
-    <mat-card class="trial-card author-card">
-      <mat-card-header>
-        <mat-card-title>{{ 'trial.author.title' | translate }}</mat-card-title>
-        <mat-card-subtitle>{{ 'trial.author.hint' | translate }}</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content class="author-form">
-        <mat-form-field appearance="outline" class="author-name">
-          <mat-label>{{ 'trial.author.chapter' | translate }}</mat-label>
-          <input matInput [(ngModel)]="authorChapter" maxlength="200" [disabled]="authorBusy">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="author-fens">
-          <mat-label>{{ 'trial.author.fens' | translate }}</mat-label>
-          <textarea matInput rows="6" [(ngModel)]="authorFens" [disabled]="authorBusy"
-                    placeholder="r1b2rk1/pppq1ppp/1bn5/8/3N4/4BB2/PPPQ1PPP/R3K2R w KQ - 0 1 | Kommentar…"></textarea>
-        </mat-form-field>
-        <button mat-raised-button color="primary" (click)="addChapter()"
-                [disabled]="authorBusy || !authorChapter.trim() || !authorFens.trim()">
-          <mat-icon>playlist_add</mat-icon> {{ 'trial.author.add' | translate }}
-        </button>
-        @if (authorErrors.length > 0) {
-          <ul class="author-errors">
-            @for (e of authorErrors; track e.lineNumber) {
-              <li>
-                <strong>{{ 'trial.author.line' | translate: { line: e.lineNumber } }}:</strong>
-                {{ ('trial.author.err.' + e.reason) | translate }}
-                @if (e.text) { <code>{{ e.text }}</code> }
-              </li>
-            }
-          </ul>
-        }
-      </mat-card-content>
-    </mat-card>
-  }
 </div>

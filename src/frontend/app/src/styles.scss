@@ -212,15 +212,11 @@ $rh-piece-roles: (pawn: 'P', knight: 'N', bishop: 'B', rook: 'R', queen: 'Q', ki
      (`.calc-page` hat 0.75rem) und dieselbe Höhe wie die Zeile. Klebte die Leiste am
      Fensterrand, während die Seite gedeckelt und zentriert ist, lägen die Symbole auf einem
      breiten Schirm NEBEN der Zeile statt darauf. */
-  body.calc-mode app-navbar {
+  body.calc-mode .rct-toolbar {
     position: fixed;
     top: 0.75rem;
     right: 0.75rem;
     z-index: 900;
-    width: auto;
-  }
-
-  body.calc-mode app-navbar mat-toolbar {
     width: auto;
     height: 40px;
     min-height: 40px;
@@ -229,15 +225,15 @@ $rh-piece-roles: (pawn: 'P', knight: 'N', bishop: 'B', rook: 'R', queen: 'Q', ki
     box-shadow: none;
   }
 
-  /* Die Marke steht auf jeder anderen Seite — hier führt der Pfeil der Befehlszeile zurück. */
-  body.calc-mode app-navbar .logo,
-  body.calc-mode app-navbar .spacer { display: none; }
+  /* Die Marke steht auf jeder anderen Seite — hier führt der Turm der Befehlszeile zurück. */
+  body.calc-mode .rct-toolbar .brand,
+  body.calc-mode .rct-toolbar .spacer { display: none; }
 
-  body.calc-mode main { padding-top: 0; }
+  body.calc-mode .rct-main { padding-top: 0; }
 
   /* Fußzeile in die rechte Spalte, ganz unten: sie ist Auskunft (Version, Hilfe, Feedback) und
      kostete unter dem Brett eine ganze Zeile Höhe. Aus dem Fluss genommen kostet sie keine. */
-  body.calc-mode .app-footer {
+  body.calc-mode .rct-footer {
     position: fixed;
     right: 0.9rem;
     bottom: 0.4rem;
