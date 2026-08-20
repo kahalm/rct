@@ -180,6 +180,9 @@ public class CalculationService
             DisplayName = book.DisplayName,
             IsCalculation = book.IsCalculation,
             CourseAccess = hasCourse,
+            // Hoechste sichtbare Stellungs-Id = zuletzt angelegtes Kapitel (Ids sind monoton).
+            NewestChapter = positions.Where(p => p.Chapter != null)
+                .OrderByDescending(p => p.Id).Select(p => p.Chapter).FirstOrDefault(),
             Positions = positions,
             Chapters = chapters,
             Points = chapters.Sum(c => c.Points),

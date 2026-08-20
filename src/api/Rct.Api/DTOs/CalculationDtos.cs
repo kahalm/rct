@@ -73,6 +73,10 @@ public class CalcBookDto
     /// <summary>Hat DIESER User Kurszugang (CourseAccess/Tester/Admin)? Steuert die Startseite:
     /// Freigeschaltete sehen „Thanks for joining" + Training-Knopf statt der Trial-CTAs.</summary>
     public bool CourseAccess { get; set; }
+    /// <summary>Das ZULETZT ANGELEGTE fuer diesen User sichtbare Kapitel (hoechste Stellungs-Id) —
+    /// Ziel des Training-Knopfs der Mitglieder-Startseite. Die Kapitel-Reihenfolge in
+    /// <see cref="Chapters"/> haengt an den Round-Nummern und taugt dafuer nicht.</summary>
+    public string? NewestChapter { get; set; }
     public List<CalcPositionListItemDto> Positions { get; set; } = new();
     /// <summary>Kapitelsummen in der Reihenfolge des ersten Auftretens in <see cref="Positions"/>.</summary>
     public List<CalcChapterSummaryDto> Chapters { get; set; } = new();

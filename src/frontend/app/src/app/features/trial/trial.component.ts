@@ -74,6 +74,9 @@ export class TrialComponent implements OnInit, OnDestroy {
   }
 
   private get newestChapter(): string | null {
+    // Vom Server: zuletzt ANGELEGTES sichtbares Kapitel (die chapters-Reihenfolge haengt an
+    // Round-Nummern und ist dafuer irrefuehrend). Fallback: letztes der Liste.
+    if (this.book?.newestChapter) return this.book.newestChapter;
     const named = (this.book?.chapters ?? []).filter(c => !!c.chapter);
     return named.length ? named[named.length - 1].chapter : null;
   }

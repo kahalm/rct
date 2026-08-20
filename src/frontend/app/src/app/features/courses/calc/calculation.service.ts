@@ -53,6 +53,8 @@ export interface CalcBook {
   isCalculation: boolean;
   /** Kurszugang DIESES Users (Freischaltung/Tester/Admin) — steuert die Startseite. */
   courseAccess?: boolean;
+  /** Zuletzt angelegtes sichtbares Kapitel — Ziel des Training-Knopfs. */
+  newestChapter?: string | null;
   positions: CalcPositionListItem[];
   /** Summen je Kapitel. Fehlen sie, rechnet die Ansicht sie aus den Zeilen selbst. */
   chapters?: CalcChapterSummary[];
