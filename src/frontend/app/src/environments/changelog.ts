@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.8.0';
+export const APP_VERSION = '0.8.1';
 
 export interface ChangelogEntry {
   version: string;
@@ -10,6 +10,9 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.8.1', date: '2026-08-20', changes: [
+    { en: 'License cleanup for commercial use: the GPL piece sets (Classic/cburnett and Merida) and the AGPL board textures (wood, water, marble, metal, leather, maple) were removed. Chessnut (Apache 2.0) is the new default; all remaining sets are MIT, Apache 2.0 or CC0. Saved preferences pointing at removed options fall back automatically.' },
+  ] },
   { version: '0.8.0', date: '2026-08-20', changes: [
     { en: 'New brand assets everywhere: app icon (PWA/Android incl. maskable and monochrome), favicon, toolbar mark, a hero image on the start page, a social preview card for shared links, and a branded header in password-reset emails.' },
   ] },

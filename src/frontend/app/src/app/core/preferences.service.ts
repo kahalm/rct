@@ -23,7 +23,7 @@ interface ProfilePreferences {
 @Injectable({ providedIn: 'root' })
 export class PreferencesService {
   boardTheme = 'brown';
-  pieceSet = 'cburnett';
+  pieceSet = 'chessnut';
   stockfishDepth = 16;
   puzzleDifficulty = 'normal';
   bookStockfishDepth = 16;
@@ -47,8 +47,8 @@ export class PreferencesService {
 
   /** Read all preferences from localStorage (synchronous, instant). */
   private loadFromLocalStorage(): void {
-    try { this.boardTheme = localStorage.getItem(BOARD_THEME_KEY) || 'brown'; } catch {}
-    try { this.pieceSet = localStorage.getItem(PIECE_SET_KEY) || 'cburnett'; } catch {}
+    try { this.boardTheme = sanitizeBoardTheme(localStorage.getItem(BOARD_THEME_KEY)); } catch {}
+    try { this.pieceSet = sanitizePieceSet(localStorage.getItem(PIECE_SET_KEY)); } catch {}
     try {
       const tm = localStorage.getItem(THEME_MODE_KEY);
       if (tm === 'fixed' || tm === 'random' || tm === 'crazy') this.themeMode = tm;
@@ -184,4 +184,15 @@ export class PreferencesService {
   private clampDepth(d: number): number {
     return Math.max(1, Math.min(24, d));
   }
+}
+
+/** Entfernte/unbekannte gespeicherte Werte auf die Defaults ziehen (Sets/Texturen wurden aus
+ *  Lizenzgruenden entfernt — alte localStorage-/Server-Werte duerfen kein leeres Brett ergeben). */
+const VALID_PIECE_SETS = ['fantasy', 'spatial', 'celtic', 'chessnut', 'rhosgfx'];
+const VALID_BOARD_THEMES = ['brown', 'blue', 'green', 'gray', 'wood'];
+function sanitizePieceSet(v: string | null): string {
+  return v && VALID_PIECE_SETS.includes(v) ? v : 'chessnut';
+}
+function sanitizeBoardTheme(v: string | null): string {
+  return v && VALID_BOARD_THEMES.includes(v) ? v : 'brown';
 }

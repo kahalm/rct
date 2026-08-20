@@ -21,6 +21,12 @@ Nach Erhalt: Icons als 512/192 px PNG + maskable-Variante ablegen, `ngsw`/Manife
 > stated otherwise, NO text unless the asset explicitly includes the wordmark
 > "Real Chess Training", clean silhouette readable at small sizes.
 
+> **Lektion aus Run 1 (2026-08-20):** Die gelieferte „Transparent"-Variante (01b) hatte das
+> Schachbrett-Transparenzmuster FEST EINGEBACKEN (RGB ohne Alphakanal) und war unbrauchbar.
+> Beim nächsten Run für alle Transparent-Varianten explizit fordern:
+> **"PNG with a REAL alpha channel (RGBA). Fully transparent background — do NOT paint a
+> checkerboard pattern into the image."**
+
 ## 1) App-Icon (PWA/Android), 1024×1024
 
 > Design a square app icon, 1024×1024. Motif: minimalist white chess knight silhouette,

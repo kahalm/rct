@@ -1,22 +1,19 @@
 export type ThemeMode = 'fixed' | 'random' | 'crazy';
 
+// NUR selbstgebaute Flat-Color-Themes (Inline-SVG-Checker in styles.scss). Die frueheren
+// JPG-Texturen (realwood/water/marble/metal/leather/maple) stammten aus Lichess und sind
+// AGPLv3 — fuer ein kommerzielles Produkt entfernt (User-Entscheid, 2026-08-20).
 export const BOARD_THEMES: { key: string; name: string; light: string; dark: string; img?: string }[] = [
   { key: 'brown', name: 'Brown', light: '#f0d9b5', dark: '#b58863' },
   { key: 'blue', name: 'Blue', light: '#d4e3ed', dark: '#5882a1' },
   { key: 'green', name: 'Green', light: '#eeeed2', dark: '#769656' },
   { key: 'gray', name: 'Gray', light: '#f0f0f0', dark: '#8a8a8a' },
   { key: 'wood', name: 'Wood', light: '#e6d1a0', dark: '#8b5e3c' },
-  { key: 'realwood', name: 'Holz', light: '#d8b98a', dark: '#8a5a33', img: '/board/wood4.jpg' },
-  { key: 'water', name: 'Wasser', light: '#6f93b8', dark: '#3c5a78', img: '/board/blue3.jpg' },
-  { key: 'marble', name: 'Marmor', light: '#e8e8e8', dark: '#9a9a9a', img: '/board/marble.jpg' },
-  { key: 'metal', name: 'Metall', light: '#cfcfcf', dark: '#7a7a7a', img: '/board/metal.jpg' },
-  { key: 'leather', name: 'Leder', light: '#a87c4f', dark: '#5a3d23', img: '/board/leather.jpg' },
-  { key: 'maple', name: 'Ahorn', light: '#e8cfa0', dark: '#b5895a', img: '/board/maple.jpg' },
 ];
 
+// Nur kommerziell unbedenkliche Sets (MIT/Apache-2.0/CC0, siehe public/piece/LICENSES.md).
+// cburnett + merida (GPLv2+) wurden entfernt (User-Entscheid, 2026-08-20).
 export const PIECE_SETS = [
-  { key: 'cburnett', name: 'Classic', preview: '/piece/cburnett/wN.svg' },
-  { key: 'merida', name: 'Merida', preview: '/piece/merida/wN.svg' },
   { key: 'fantasy', name: 'Fantasy', preview: '/piece/fantasy/wN.svg' },
   { key: 'spatial', name: 'Spatial', preview: '/piece/spatial/wN.svg' },
   { key: 'celtic', name: 'Celtic', preview: '/piece/celtic/wN.svg' },
