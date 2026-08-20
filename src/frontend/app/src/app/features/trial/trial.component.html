@@ -46,4 +46,16 @@
 
   </mat-card>
 
+  <!-- ===== Admin-Schnellzugriff (User-Wunsch): Kapiteleingabe + User-Verwaltung ===== -->
+  @if (auth.isAdmin) {
+    <div class="admin-links">
+      <a mat-stroked-button routerLink="/admin/chapters">
+        <mat-icon>playlist_add</mat-icon> {{ 'app.addChapter' | translate }}
+      </a>
+      <a mat-stroked-button routerLink="/admin/users">
+        <mat-icon>group</mat-icon> {{ 'app.users' | translate }}
+      </a>
+    </div>
+  }
+
 </div>

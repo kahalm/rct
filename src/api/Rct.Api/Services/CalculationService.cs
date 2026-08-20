@@ -132,6 +132,31 @@ public class CalculationService
             })
             .ToListAsync(ct);
 
+        // Kapitel-Reihenfolge = RELEASE-Chronologie (User-Entscheid), nicht Round-Nummern:
+        // Trial (ohne Kapitel) zuerst; dann Kapitel OHNE Termin in Anlage-Reihenfolge (der
+        // aeltere Bestand); dann terminierte aufsteigend nach ReleaseAt (?? TesterReleaseAt).
+        // Stabile Sortierung: INNERHALB eines Kapitels bleibt die Round-Ordnung von oben.
+        var releaseRows = await _db.ChapterReleases.Where(r => r.BookId == bookId)
+            .Select(r => new { r.Chapter, r.ReleaseAt, r.TesterReleaseAt })
+            .ToListAsync(ct);
+        var releaseDate = releaseRows.ToDictionary(r => r.Chapter, r => r.ReleaseAt ?? r.TesterReleaseAt);
+        var rankByChapter = positions.Where(p => p.Chapter != null)
+            .GroupBy(p => p.Chapter!)
+            .ToDictionary(g => g.Key, g =>
+            {
+                var date = releaseDate.TryGetValue(g.Key, out var d) ? d : null;
+                return date == null
+                    ? (Tier: 1, Date: DateTime.MinValue, MinId: g.Min(p => p.Id))
+                    : (Tier: 2, Date: date.Value, MinId: g.Min(p => p.Id));
+            });
+        (int Tier, DateTime Date, int MinId) RankOf(string? chapter)
+            => chapter == null ? (0, DateTime.MinValue, 0) : rankByChapter[chapter];
+        positions = positions
+            .OrderBy(p => RankOf(p.Chapter).Tier)
+            .ThenBy(p => RankOf(p.Chapter).Date)
+            .ThenBy(p => RankOf(p.Chapter).MinId)
+            .ToList();
+
         // Nur die Kennzahlen laden, NICHT das (bis zu 256 KB große) TreeJson — für die Liste zählt
         // bloß, OB ein Baum da ist.
         var rows = await _db.CalculationTrees
@@ -180,9 +205,10 @@ public class CalculationService
             DisplayName = book.DisplayName,
             IsCalculation = book.IsCalculation,
             CourseAccess = hasCourse,
-            // Hoechste sichtbare Stellungs-Id = zuletzt angelegtes Kapitel (Ids sind monoton).
+            // Letztes Kapitel der Release-Reihenfolge = juengster Termin (bzw. zuletzt
+            // angelegtes terminloses) — konsistent zur angezeigten Kapitelfolge.
             NewestChapter = positions.Where(p => p.Chapter != null)
-                .OrderByDescending(p => p.Id).Select(p => p.Chapter).FirstOrDefault(),
+                .Select(p => p.Chapter).LastOrDefault(),
             GuidelinesSeen = await _db.AppUsers.Where(u => u.Id == userId)
                 .Select(u => u.GuidelinesSeen).FirstOrDefaultAsync(ct),
             Positions = positions,
@@ -558,12 +584,17 @@ public class CalculationService
         var counts = await _db.BookPuzzles
             .Where(bp => bp.BookId == bookId && bp.Chapter != null)
             .GroupBy(bp => bp.Chapter!)
-            .Select(g => new { Chapter = g.Key, Count = g.Count() })
+            .Select(g => new { Chapter = g.Key, Count = g.Count(), MinId = g.Min(bp => bp.Id) })
             .ToListAsync(ct);
         var releases = await _db.ChapterReleases.Where(r => r.BookId == bookId).ToListAsync(ct);
         var byChapter = releases.ToDictionary(r => r.Chapter);
+        // Gleiche Ordnung wie im Trainer: terminlose nach Anlage, dann ReleaseAt aufsteigend.
         return counts
-            .OrderBy(c => c.Chapter, StringComparer.Ordinal)
+            .OrderBy(c => byChapter.TryGetValue(c.Chapter, out var rel)
+                && (rel.ReleaseAt ?? rel.TesterReleaseAt) != null ? 2 : 1)
+            .ThenBy(c => byChapter.TryGetValue(c.Chapter, out var rel)
+                ? (rel.ReleaseAt ?? rel.TesterReleaseAt ?? DateTime.MinValue) : DateTime.MinValue)
+            .ThenBy(c => c.MinId)
             .Select(c => new ChapterInfoDto
             {
                 Chapter = c.Chapter,

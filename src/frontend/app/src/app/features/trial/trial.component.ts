@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
+import { AuthService } from '../../core/auth.service';
 import { CalculationService, CalcBook } from '../courses/calc/calculation.service';
 import { ProfileService } from '../../core/profile.service';
 import { GuidelinesDialogComponent, GuidelinesDialogData } from './guidelines-dialog.component';
@@ -29,7 +30,7 @@ export const PRODUCT_URL = 'https://nextlevelchess.kit.com/products/real-chess-t
   changeDetection: ChangeDetectionStrategy.Default,
   selector: 'app-trial',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, TranslatePipe],
+  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, TranslatePipe],
   templateUrl: './trial.component.html',
   styleUrls: ['./trial.component.scss'],
 })
@@ -44,6 +45,7 @@ export class TrialComponent implements OnInit, OnDestroy {
   private subs = new Subscription();
 
   constructor(
+    public auth: AuthService,
     private calc: CalculationService,
     private profile: ProfileService,
     private dialog: MatDialog,
