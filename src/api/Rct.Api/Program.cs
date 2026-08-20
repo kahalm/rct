@@ -88,6 +88,9 @@ try
     // Services
     builder.Services.AddScoped<AuthService>();
     builder.Services.AddScoped<CalculationService>();
+    builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+    builder.Services.AddScoped<PasswordResetService>();
+    builder.Services.AddScoped<ProfileService>();
 
     // CORS — nur lokale Dev-Origins; KEIN AllowCredentials (Auth strikt über den Bearer-Header).
     builder.Services.AddCors(options =>

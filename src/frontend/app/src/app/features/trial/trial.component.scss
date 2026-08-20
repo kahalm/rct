@@ -18,3 +18,8 @@
 .review { padding: 4px 16px 16px; opacity: 0.75; }
 .review--ready { opacity: 1; }
 .review--ready .sec mat-icon { color: #66bb6a; }
+
+.trial-page { flex-direction: column; align-items: center; gap: 16px; }
+.author-card { border-left: 3px solid #f5a623; }
+.author-form { display: flex; flex-direction: column; gap: 4px; }
+.author-form button { align-self: flex-start; }

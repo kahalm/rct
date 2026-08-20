@@ -1,5 +1,7 @@
 namespace Rct.Api.DTOs;
 
+using Rct.Api.Services;
+
 /// <summary>
 /// Eine Stellung eines Kalkulationsbuchs in der Übersichtsliste — bewusst LEICHT (ohne FEN,
 /// Kommentar und vor allem ohne <c>Moves</c>): im Kalkulations-Modus gibt es keine Lösung, also
@@ -200,4 +202,20 @@ public class CalcPositionStateDto
     public int? Grade { get; set; }
     /// <summary>Die daraus abgeleiteten Punkte (<c>null</c>, solange unbewertet).</summary>
     public int? Points { get; set; }
+}
+
+/// <summary>Kapitel-Authoring (Admin): Kapitelname + Memo-Text (eine FEN je Zeile, RookHub-Format).</summary>
+public class AddChapterDto
+{
+    [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MaxLength(200)]
+    public string Chapter { get; set; } = string.Empty;
+    [System.ComponentModel.DataAnnotations.Required]
+    public string FenList { get; set; } = string.Empty;
+}
+
+/// <summary>Ergebnis des Kapitel-Authorings: angelegte Stellungen + nicht verwertbare Zeilen.</summary>
+public class AddChapterResultDto
+{
+    public int Added { get; set; }
+    public List<FenListParser.FenError> Errors { get; set; } = new();
 }

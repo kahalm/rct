@@ -40,8 +40,9 @@ import { SnackbarService } from '../../core/snackbar.service';
             </button>
           </form>
         </mat-card-content>
-        <mat-card-actions>
+        <mat-card-actions class="auth-links">
           <a mat-button routerLink="/register" [queryParams]="{ returnUrl: returnUrl }">{{ 'auth.login.registerLink' | translate }}</a>
+          <a mat-button routerLink="/forgot-password">{{ 'auth.login.forgotLink' | translate }}</a>
         </mat-card-actions>
       </mat-card>
     </div>
@@ -51,6 +52,7 @@ import { SnackbarService } from '../../core/snackbar.service';
     mat-card { width: 400px; max-width: 90vw; }
     .auth-required { background: rgba(144, 202, 249, 0.15); border-left: 3px solid #90caf9; padding: 0.6rem 0.8rem; border-radius: 4px; margin: 0.5rem 0 0; font-size: 0.9rem; }
     .auth-form { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1rem; }
+    .auth-links { display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem; }
     mat-form-field { width: 100%; }
   `]
 })

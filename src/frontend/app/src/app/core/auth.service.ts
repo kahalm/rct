@@ -80,6 +80,35 @@ export class AuthService {
     return this.http.put<void>(`${this.apiUrl}/change-password`, { currentPassword, newPassword });
   }
 
+  /** „Passwort vergessen": Server verschickt ggf. einen Reset-Link, antwortet aber IMMER neutral 200. */
+  forgotPassword(email: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  /** Neues Passwort mit dem Einmal-Token aus der Reset-Mail setzen (401 bei ungültig/abgelaufen). */
+  resetPassword(token: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/reset-password`, { token, newPassword });
+  }
+
+  /** Eigenes Konto endgültig löschen (Passwort-Bestätigung); bei Erfolg wird sofort ausgeloggt. */
+  deleteAccount(password: string): Observable<void> {
+    return this.http.delete<void>('/api/profile/account', { body: { password } })
+      .pipe(tap(() => this.logout()));
+  }
+
+  /**
+   * Nach einer Profil-Änderung den Anzeigenamen im gespeicherten User nachziehen
+   * (Toolbar zeigt sofort den neuen Namen). Token/Claims bleiben unverändert —
+   * fürs LOGIN gilt der neue Name serverseitig ohnehin ab sofort.
+   */
+  updateStoredUsername(username: string): void {
+    const user = this.currentUserSubject.value;
+    if (!user) return;
+    const updated = { ...user, username };
+    localStorage.setItem(this.storageKey, JSON.stringify(updated));
+    this.currentUserSubject.next(updated);
+  }
+
   logout(): void {
     localStorage.removeItem(this.storageKey);
     this.currentUserSubject.next(null);

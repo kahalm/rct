@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<Book> Books => Set<Book>();
     public DbSet<BookPuzzle> BookPuzzles => Set<BookPuzzle>();
     public DbSet<CalculationTree> CalculationTrees => Set<CalculationTree>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,6 +35,17 @@ public class AppDbContext : DbContext
             e.HasOne(bp => bp.Book)
              .WithMany(b => b.Puzzles)
              .HasForeignKey(bp => bp.BookId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PasswordResetToken>(e =>
+        {
+            // Unique-Index auf TokenHash → O(1)-Lookup beim Einloesen; Tokens gehen mit dem User.
+            e.HasIndex(t => t.TokenHash).IsUnique();
+            e.HasIndex(t => t.UserId);
+            e.HasOne(t => t.User)
+             .WithMany()
+             .HasForeignKey(t => t.UserId)
              .OnDelete(DeleteBehavior.Cascade);
         });
 

@@ -1,0 +1,31 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": { "files": ["/index.html", "/manifest.webmanifest", "/favicon.svg", "/*.css", "/*.js"] }
+    },
+    {
+      "name": "i18n",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": { "files": ["/i18n/*.json"] }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": { "files": ["/icons/**", "/piece/**", "/board/**"] }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "google-fonts",
+      "urls": ["https://fonts.googleapis.com/**", "https://fonts.gstatic.com/**"],
+      "cacheConfig": { "maxSize": 30, "maxAge": "30d", "strategy": "performance" }
+    }
+  ]
+}

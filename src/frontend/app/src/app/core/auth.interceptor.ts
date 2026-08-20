@@ -17,7 +17,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(request).pipe(
     catchError(err => {
-      if (err.status === 401 && authService.isLoggedIn) {
+      // 401 heißt normalerweise „Session abgelaufen" → ausloggen. Ausnahme: Endpoints,
+      // bei denen 401 die FACHLICHE Antwort „falsches Passwort / ungültiges Token" ist —
+      // dort bleibt die Session gültig und die Seite zeigt den Fehler selbst an.
+      const password401 = req.url === '/api/auth/change-password'
+        || req.url === '/api/auth/reset-password'
+        || req.url === '/api/profile/account';
+      if (err.status === 401 && !password401 && authService.isLoggedIn) {
         authService.logout();
       }
       return throwError(() => err);

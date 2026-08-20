@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "homes.oberschmid.rct",
+    "sha256_cert_fingerprints": ["12:00:4A:2A:33:A5:18:6D:5A:52:6E:59:2D:5D:CA:FF:8F:A1:0C:E7:39:F0:A9:46:85:85:4B:58:18:3F:FB:CC"]
+  }
+}]

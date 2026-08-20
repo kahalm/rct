@@ -43,6 +43,15 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      # Passwort-Reset-Mails (leer = SMTP aus, Reset-Mails werden verworfen + geloggt)
+      App__BaseUrl: ${APP_BASE_URL:-}
+      Email__SmtpHost: ${EMAIL_SMTP_HOST:-}
+      Email__SmtpPort: ${EMAIL_SMTP_PORT:-587}
+      Email__SmtpUser: ${EMAIL_SMTP_USER:-}
+      Email__SmtpPassword: ${EMAIL_SMTP_PASSWORD:-}
+      Email__FromAddress: ${EMAIL_FROM_ADDRESS:-}
+      Email__FromName: ${EMAIL_FROM_NAME:-Real Chess Training}
+      Email__UseStartTls: ${EMAIL_USE_STARTTLS:-true}
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
     ports:
       - "${API_EXTERNAL_PORT:-5080}:8080"

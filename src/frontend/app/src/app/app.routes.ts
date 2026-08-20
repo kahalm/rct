@@ -4,6 +4,9 @@ import { authGuard } from './core/auth.guard';
 export const routes: Routes = [
   { path: 'login', loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent) },
   { path: 'register', loadComponent: () => import('./features/auth/register.component').then(m => m.RegisterComponent) },
+  { path: 'forgot-password', loadComponent: () => import('./features/auth/forgot-password.component').then(m => m.ForgotPasswordComponent) },
+  { path: 'reset-password', loadComponent: () => import('./features/auth/reset-password.component').then(m => m.ResetPasswordComponent) },
+  { path: 'profile', canActivate: [authGuard], loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent) },
   // Das eine Feature: die Trial-Seite (Guidelines + Start + Review-Video).
   { path: 'trial', canActivate: [authGuard], loadComponent: () => import('./features/trial/trial.component').then(m => m.TrialComponent) },
   // Der Kalkulations-Trainer (verbatim aus RookHub) läuft unter RookHubs Routen-Form

@@ -1,0 +1,53 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Rct.Api.DTOs;
+using Rct.Api.Services;
+
+namespace Rct.Api.Controllers;
+
+[ApiController]
+[Route("api/profile")]
+[Authorize]
+public class ProfileController : BaseApiController
+{
+    private readonly ProfileService _profileService;
+
+    public ProfileController(ProfileService profileService)
+    {
+        _profileService = profileService;
+    }
+
+    [HttpGet("")]
+    public async Task<ActionResult<ProfileDto>> Get()
+    {
+        return Ok(await _profileService.GetAsync(GetUserId()));
+    }
+
+    [HttpPut("")]
+    public async Task<ActionResult<ProfileDto>> Update([FromBody] UpdateProfileDto dto)
+    {
+        try
+        {
+            return Ok(await _profileService.UpdateAsync(GetUserId(), dto));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>Konto loeschen (DSGVO-Anonymisierung) — verlangt das aktuelle Passwort.</summary>
+    [HttpDelete("account")]
+    public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountDto dto)
+    {
+        try
+        {
+            await _profileService.DeleteAccountAsync(GetUserId(), dto.Password);
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
+}

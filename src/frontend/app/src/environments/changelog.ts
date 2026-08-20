@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.2.3';
+export const APP_VERSION = '0.3.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -9,6 +9,12 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.3.0', date: '2026-08-20', changes: [
+    { en: 'Profile page: change your name and email, change your password, and delete your account (with password confirmation; personal data is anonymized).', de: 'Profilseite: Name und E-Mail ändern, Passwort ändern und Konto löschen (mit Passwort-Bestätigung; persönliche Daten werden anonymisiert).' },
+    { en: 'Forgot password: request a reset link by email and set a new password (link valid for 60 minutes, single use).', de: 'Passwort vergessen: Reset-Link per E-Mail anfordern und neues Passwort setzen (Link 60 Minuten gültig, einmalig).' },
+    { en: 'Admins can add new chapters right on the trial page — one FEN per line, same memo format as RookHub, optional comment after „|“.', de: 'Admins können neue Kapitel direkt auf der Trial-Seite anlegen — eine FEN je Zeile, gleiches Memo-Format wie RookHub, optionaler Kommentar hinter „|“.' },
+    { en: 'RCT is now an installable PWA (service worker, offline app shell) and there is an Android app build (TWA) via GitHub Action.', de: 'RCT ist jetzt eine installierbare PWA (Service Worker, Offline-App-Shell), und es gibt einen Android-App-Build (TWA) per GitHub-Action.' },
+  ] },
   { version: '0.2.3', date: '2026-08-20', changes: [
     { en: 'Fixed the board (and all data loading) never appearing: Angular 22 no longer re-renders after HTTP responses unless views are explicitly marked — classic zone-based code silently freezes. RCT is now pinned to Angular 21.2 (the last version with classic zone change detection, which this codebase was designed for). The Noel chapters from RookHub are also available in the trial book now.', de: 'Behoben, dass das Brett (und jedes Nachladen) nie erschien: Angular 22 rendert nach HTTP-Antworten nicht mehr neu, solange Views nicht explizit markiert werden — klassischer Zone-Code friert still ein. RCT ist jetzt auf Angular 21.2 gepinnt (die letzte Version mit klassischer Zone-Change-Detection, für die dieser Code entworfen wurde). Außerdem sind die Noel-Kapitel aus RookHub jetzt im Trial-Buch verfügbar.' },
   ] },

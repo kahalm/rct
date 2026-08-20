@@ -1,7 +1,8 @@
-import { ApplicationConfig, ErrorHandler, provideZoneChangeDetection, LOCALE_ID } from '@angular/core';
+import { ApplicationConfig, ErrorHandler, provideZoneChangeDetection, LOCALE_ID, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideServiceWorker } from '@angular/service-worker';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { registerLocaleData } from '@angular/common';
@@ -29,6 +30,12 @@ export const appConfig: ApplicationConfig = {
     provideTranslateService({
       fallbackLang: 'en',
       loader: provideTranslateHttpLoader({ prefix: '/i18n/', suffix: '.json' })
+    }),
+    // Service Worker (nur im Prod-Build aktiv): App-Shell + i18n + Assets offline-fähig,
+    // PWA-installierbar; /api wird bewusst NICHT gecacht (siehe ngsw-config.json).
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000'
     }),
   ]
 };

@@ -38,6 +38,9 @@ import { environment } from '../environments/environment';
       </mat-menu>
       @if (auth.isLoggedIn) {
         <span class="user">{{ auth.currentUser?.username }}</span>
+        <button mat-icon-button routerLink="/profile" [matTooltip]="'app.profile' | translate">
+          <mat-icon>person</mat-icon>
+        </button>
         <button mat-icon-button (click)="auth.logout()" [matTooltip]="'app.logout' | translate">
           <mat-icon>logout</mat-icon>
         </button>

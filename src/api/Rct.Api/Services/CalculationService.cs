@@ -444,6 +444,44 @@ public class CalculationService
     /// stehen: „Baum verwerfen" heißt Analyse neu anfangen, nicht die schon investierte Zeit und
     /// die eigene Bewertung stillschweigend wegwerfen.</para>
     /// </summary>
+    /// <summary>Kapitel-Authoring (nur Admin, Controller prüft): hängt geparste FEN-Stellungen als
+    /// neues/erweitertes Kapitel an ein Kalkulationsbuch. Rounds laufen JE KAPITEL ab der nächsten
+    /// freien Nummer weiter; Titel werden fortlaufend vergeben. Gibt die Zahl der angelegten
+    /// Stellungen zurück. Buch muss existieren und ein Kalkulationsbuch sein (sonst 404).</summary>
+    public async Task<int> AddChapterPositionsAsync(int bookId, string chapter,
+        IReadOnlyList<FenListParser.ParsedFen> positions, CancellationToken ct = default)
+    {
+        var isCalc = await _db.Books.Where(b => b.Id == bookId).Select(b => (bool?)b.IsCalculation).FirstOrDefaultAsync(ct);
+        if (isCalc != true) throw new KeyNotFoundException("Book not found.");
+
+        var name = chapter.Trim();
+        if (name.Length is 0 or > 200) throw new ArgumentException("Chapter name must be 1-200 characters.");
+
+        // Nächste freie Round-Nummer INNERHALB des Kapitels (Rounds sind Strings; numerisch parsen).
+        var existingRounds = await _db.BookPuzzles
+            .Where(bp => bp.BookId == bookId && bp.Chapter == name)
+            .Select(bp => bp.Round).ToListAsync(ct);
+        var next = existingRounds.Select(r => int.TryParse(r, out var n) ? n : 0).DefaultIfEmpty(0).Max() + 1;
+
+        foreach (var p in positions)
+        {
+            _db.BookPuzzles.Add(new BookPuzzle
+            {
+                BookId = bookId,
+                Round = next.ToString(),
+                Fen = p.Fen,
+                Moves = string.Empty,
+                StartPly = 0,
+                Title = $"Position {next}",
+                Chapter = name,
+                Comment = p.Comment,
+            });
+            next++;
+        }
+        await _db.SaveChangesAsync(ct);
+        return positions.Count;
+    }
+
     public async Task DeleteTreeAsync(int userId, int bookPuzzleId, bool isAdmin, CancellationToken ct = default)
     {
         var tree = await _db.CalculationTrees

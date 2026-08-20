@@ -2,7 +2,8 @@
   "app": {
     "title": "Real Chess Training",
     "language": "Sprache",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "profile": "Profil"
   },
   "trial": {
     "title": "Real Chess Training — Trial",
@@ -51,6 +52,14 @@
       "later": "Arbeite zuerst alle sechs Stellungen durch — danach prüfst du dein Denken mit dem Breakdown-Video.",
       "ready": "Alle Stellungen festgelegt — Zeit für das Breakdown-Video.",
       "watch": "Breakdown-Video ansehen"
+    },
+    "author": {
+      "title": "Kapitel hinzufügen (Admin)",
+      "hint": "Eine FEN je Zeile — optional „| Kommentar“ oder „{Kommentar}“ hinter der FEN (gleiches Memo-Format wie RookHub).",
+      "chapter": "Kapitelname",
+      "fens": "Stellungen (eine FEN je Zeile)",
+      "add": "Stellungen anlegen",
+      "result": "{{added}} Stellungen angelegt, {{errors}} Zeilen übersprungen"
     }
   },
   "auth": {
@@ -61,6 +70,7 @@
       "submit": "Anmelden",
       "submitting": "Anmeldung läuft...",
       "registerLink": "Noch kein Konto? Registrieren",
+      "forgotLink": "Passwort vergessen?",
       "failed": "Anmeldung fehlgeschlagen",
       "required": "Bitte logge dich ein oder registriere dich, um fortzufahren."
     },
@@ -75,6 +85,49 @@
       "loginLink": "Bereits ein Konto? Anmelden",
       "failed": "Registrierung fehlgeschlagen",
       "emailHint": "Pflichtfeld — für Login und wichtige Mitteilungen."
+    },
+    "forgot": {
+      "title": "Passwort vergessen",
+      "emailLabel": "E-Mail",
+      "submit": "Reset-Link anfordern",
+      "submitting": "Wird gesendet...",
+      "sent": "Falls zu dieser E-Mail-Adresse ein Konto existiert, ist eine Nachricht mit dem Reset-Link unterwegs. Schau auch im Spam-Ordner nach.",
+      "backToLogin": "Zurück zur Anmeldung"
+    },
+    "reset": {
+      "title": "Neues Passwort setzen",
+      "passwordLabel": "Neues Passwort",
+      "passwordHint": "Mindestens 8 Zeichen.",
+      "submit": "Passwort speichern",
+      "submitting": "Wird gespeichert...",
+      "success": "Passwort geändert — du kannst dich jetzt anmelden.",
+      "invalid": "Dieser Reset-Link ist ungültig oder abgelaufen. Fordere bitte einen neuen an."
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "account": {
+      "title": "Konto",
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "save": "Speichern",
+      "saved": "Profil gespeichert.",
+      "usernameChangedHint": "Profil gespeichert — melde dich beim nächsten Login mit dem neuen Benutzernamen an."
+    },
+    "password": {
+      "title": "Passwort ändern",
+      "current": "Aktuelles Passwort",
+      "new": "Neues Passwort",
+      "save": "Passwort ändern",
+      "changed": "Passwort geändert."
+    },
+    "delete": {
+      "title": "Gefahrenzone",
+      "hint": "Das Löschen deines Kontos entfernt Login und Trial-Fortschritt endgültig.",
+      "password": "Passwort",
+      "button": "Konto löschen",
+      "confirm": "Willst du dein Konto wirklich endgültig löschen? Alle Linien, Festlegungen und Bewertungen gehen verloren. Das lässt sich nicht rückgängig machen.",
+      "failed": "Das Konto konnte nicht gelöscht werden. Prüfe bitte dein Passwort."
     }
   },
   "common": {

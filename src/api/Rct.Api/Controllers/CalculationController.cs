@@ -70,6 +70,28 @@ public class CalculationController : BaseApiController
         catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
     }
 
+    /// <summary>Kapitel-Authoring (NUR Admin): FEN-Memo (RookHub-Format: eine Stellung je Zeile,
+    /// optional „| Kommentar" bzw. „{Kommentar}") als neues/erweitertes Kapitel anfügen. Antwortet
+    /// mit der Zahl der angelegten Stellungen und den nicht verwertbaren Zeilen (je Grund).</summary>
+    [HttpPost("books/{bookId}/chapters")]
+    public async Task<ActionResult<AddChapterResultDto>> AddChapter(int bookId, [FromBody] AddChapterDto dto,
+        CancellationToken ct)
+    {
+        if (!IsAdmin) return Forbid();
+        var parsed = FenListParser.Parse(dto.FenList);
+        var added = 0;
+        try
+        {
+            if (parsed.Positions.Count > 0)
+                added = await _service.AddChapterPositionsAsync(bookId, dto.Chapter, parsed.Positions, ct);
+            else if (parsed.Errors.Count == 0)
+                return BadRequest(new { message = "No positions found." });
+        }
+        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+        return Ok(new AddChapterResultDto { Added = added, Errors = parsed.Errors });
+    }
+
     /// <summary>Eigenen Analysebaum zu einer Stellung verwerfen (idempotent).</summary>
     [HttpDelete("positions/{bookPuzzleId}")]
     public async Task<IActionResult> DeleteTree(int bookPuzzleId, CancellationToken ct)

@@ -29,6 +29,10 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": ".well-known/**",
+                "input": "public"
               }
             ],
             "styles": [
@@ -64,7 +68,8 @@
                   "inlineCritical": false
                 },
                 "fonts": true
-              }
+              },
+              "serviceWorker": "ngsw-config.json"
             },
             "development": {
               "optimization": false,
@@ -101,6 +106,10 @@
             "assets": [
               {
                 "glob": "**/*",
+                "input": "public"
+              },
+              {
+                "glob": ".well-known/**",
                 "input": "public"
               }
             ],
