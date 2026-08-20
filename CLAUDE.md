@@ -18,7 +18,7 @@ Projekt mit **genau einem Feature**: dem Kalkulations-Trial.
 ## Stack (voller RookHub-Klon)
 
 - Backend: **.NET 10** Minimal-hosting API + **EF Core (MySQL)** + JWT-Auth.
-- Frontend: **Angular 22** standalone + Material + **ngx-translate (de/en)** + chessground-Brett.
+- Frontend: **Angular 21.2** (gepinnt! siehe ⚠️-Abschnitt) standalone + Material + **ngx-translate (de/en)** + chessground-Brett.
 - **docker-compose** (db + api + frontend) + **CI** (GitHub Actions).
 - Layout gespiegelt von RookHub: `src/api/Rct.Api`, `src/frontend/app`.
 
@@ -58,6 +58,18 @@ Breakdown-Video: https://www.youtube.com/watch?v=EgDwm7AOLTg
 
 Nicht übernommen: Repertoires, Turniere, Puzzles, Freunde, Endless, Kurse-allgemein, Chessable-Import,
 Kalkulations-Serie/Scheduler, Benachrichtigungen, Offline/PWA — alles was nicht Auth oder Calc-Trial ist.
+
+## ⚠️ Angular-Version: 21.2 ist PFLICHT (nicht upgraden!)
+
+RCT ist bewusst auf **Angular 21.2.x gepinnt** — NICHT auf 22 heben, solange der Code nicht auf
+Signals/markForCheck umgebaut ist. Grund (2026-08-20 hart erarbeitet): **Angular 22 rendert nach
+HTTP-Antworten nicht mehr neu**, wenn Views nicht explizit markiert sind (Signals, AsyncPipe,
+markForCheck, DOM-Events, impure Pipes). Der klassische Zone-Pfad (Feld-Mutation im subscribe →
+onMicrotaskEmpty → globaler Tick → CheckAlways-Refresh) refresht in 22.1.x unmarkierte Views NICHT
+mehr — selbst `provideZoneChangeDetection()` + zone.js ändern das nicht (in frischer `ng new`-App
+reproduziert). Symptom hier: Brett/Trial luden nie („Spinner für immer"), Zustand war korrekt
+gesetzt, nur die View blieb stehen; jeder Tastendruck holte alles nach (Event-Marks).
+RookHub (master, 22.1) trägt dieselbe latente Bombe und lebt nur von TranslatePipe-Marks/Events.
 
 ## Build/Dev-Konventionen
 

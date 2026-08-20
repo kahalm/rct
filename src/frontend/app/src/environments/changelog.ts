@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.2.2';
+export const APP_VERSION = '0.2.3';
 
 export interface ChangelogEntry {
   version: string;
@@ -9,6 +9,9 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.2.3', date: '2026-08-20', changes: [
+    { en: 'Fixed the board (and all data loading) never appearing: Angular 22 no longer re-renders after HTTP responses unless views are explicitly marked — classic zone-based code silently freezes. RCT is now pinned to Angular 21.2 (the last version with classic zone change detection, which this codebase was designed for). The Noel chapters from RookHub are also available in the trial book now.', de: 'Behoben, dass das Brett (und jedes Nachladen) nie erschien: Angular 22 rendert nach HTTP-Antworten nicht mehr neu, solange Views nicht explizit markiert werden — klassischer Zone-Code friert still ein. RCT ist jetzt auf Angular 21.2 gepinnt (die letzte Version mit klassischer Zone-Change-Detection, für die dieser Code entworfen wurde). Außerdem sind die Noel-Kapitel aus RookHub jetzt im Trial-Buch verfügbar.' },
+  ] },
   { version: '0.2.2', date: '2026-08-19', changes: [
     { en: 'Sign-in now also works with your email address (the registration hint always promised that). The login field says „Username or email“.', de: 'Die Anmeldung funktioniert jetzt auch mit der E-Mail-Adresse (der Registrierungs-Hinweis hat das immer versprochen). Das Login-Feld heißt „Benutzername oder E-Mail“.' },
     { en: 'A tab that was still open across a deployment could silently fail to navigate (old module files no longer exist) — this looked like a failed login. The app now detects that and reloads itself once.', de: 'Ein über ein Deployment hinweg offener Tab konnte beim Navigieren still scheitern (alte Moduldateien existieren nicht mehr) — das sah wie ein fehlgeschlagener Login aus. Die App erkennt das jetzt und lädt sich einmal selbst neu.' },
