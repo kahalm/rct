@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { CalculationService, CalcBook } from '../courses/calc/calculation.service';
+import { ProfileService } from '../../core/profile.service';
 import { GuidelinesDialogComponent, GuidelinesDialogData } from './guidelines-dialog.component';
 
 /** Feste Buch-Id des Trial-Kalkulationsbuchs (vom RctSeeder als erstes Buch angelegt). */
@@ -17,8 +18,6 @@ export const TRIAL_BOOK_ID = 1;
 export const TRIAL_VIDEO_URL = 'https://www.youtube.com/watch?v=EgDwm7AOLTg';
 /** Produktseite des vollen Programms (Next Level Chess). */
 export const PRODUCT_URL = 'https://nextlevelchess.kit.com/products/real-chess-training';
-/** Gesetzt, sobald die Guidelines einmal gezeigt wurden — danach startet das Trial direkt. */
-const GUIDELINES_SEEN_KEY = 'rct_trial_guidelines_seen';
 
 /**
  * Die Startseite: zwei Wege — das volle Programm (externe Produktseite) oder das Trial hier.
@@ -46,6 +45,7 @@ export class TrialComponent implements OnInit, OnDestroy {
 
   constructor(
     private calc: CalculationService,
+    private profile: ProfileService,
     private dialog: MatDialog,
     private router: Router,
   ) {}
@@ -82,9 +82,10 @@ export class TrialComponent implements OnInit, OnDestroy {
   }
 
   private launchTrainer(queryParams: Record<string, string>): void {
-    let seen = false;
-    try { seen = localStorage.getItem(GUIDELINES_SEEN_KEY) === '1'; } catch {}
-    if (seen) {
+    // Einmalig JE KONTO (Server-Flag im Buch-Payload) — nicht je Gerät (User-Entscheid;
+    // localStorage unterschlug das Popup dem zweiten User am selben Browser und zeigte es
+    // demselben User auf jedem neuen Gerät erneut).
+    if (this.book?.guidelinesSeen) {
       this.router.navigate(['/courses', this.bookId, 'calc'], { queryParams });
       return;
     }
@@ -92,15 +93,23 @@ export class TrialComponent implements OnInit, OnDestroy {
       GuidelinesDialogComponent, { data: { mode: 'start' }, maxWidth: '720px', autoFocus: false });
     this.subs.add(ref.afterClosed().subscribe(result => {
       // „Gezeigt" gilt unabhängig vom Knopf — einmalig heißt einmalig.
-      try { localStorage.setItem(GUIDELINES_SEEN_KEY, '1'); } catch {}
+      this.markGuidelinesSeen();
       if (result === 'start') this.router.navigate(['/courses', this.bookId, 'calc'], { queryParams });
     }));
   }
 
-  /** Guidelines jederzeit nachlesen (Link unter den Knöpfen). */
+  /** Guidelines jederzeit nachlesen (Link unter den Knöpfen) — zählt ebenfalls als gesehen. */
   showGuidelines(): void {
-    this.dialog.open<GuidelinesDialogComponent, GuidelinesDialogData>(
+    const ref = this.dialog.open<GuidelinesDialogComponent, GuidelinesDialogData>(
       GuidelinesDialogComponent, { data: { mode: 'info' }, maxWidth: '720px', autoFocus: false });
+    this.subs.add(ref.afterClosed().subscribe(() => this.markGuidelinesSeen()));
+  }
+
+  /** Serverseitig „gesehen" melden (fire-and-forget, idempotent) + lokal nachziehen. */
+  private markGuidelinesSeen(): void {
+    if (this.book?.guidelinesSeen) return;
+    if (this.book) this.book.guidelinesSeen = true;
+    this.subs.add(this.profile.markGuidelinesSeen().subscribe({ error: () => {} }));
   }
 
   /** Wie viele der sechs Stellungen schon eine Festlegung tragen (die Golden Rule zählt Festlegungen). */

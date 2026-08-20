@@ -11,6 +11,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from './core/auth.service';
 import { LocaleService } from './core/locale.service';
 import { ThemeService } from './core/theme.service';
+import { CourseStateService } from './core/course-state.service';
 import { FullscreenOverlayService } from './shared/fullscreen/fullscreen-overlay.service';
 import { environment } from '../environments/environment';
 import { exitFullscreen, isFullscreen, onFullscreenChange } from './shared/fullscreen/fullscreen.util';
@@ -42,9 +43,13 @@ import { exitFullscreen, isFullscreen, onFullscreenChange } from './shared/fulls
         <mat-menu #mainMenu="matMenu">
           <div class="menu-user">{{ auth.currentUser?.username }}</div>
           <mat-divider></mat-divider>
-          <button mat-menu-item routerLink="/trial">
-            <mat-icon>flag</mat-icon><span>{{ 'app.trial' | translate }}</span>
-          </button>
+          <!-- Freigeschaltete haben das Trial hinter sich — der Punkt verschwindet
+               (User-Entscheid); die Startseite bleibt über die Marke erreichbar. -->
+          @if (courseState.courseAccess !== true) {
+            <button mat-menu-item routerLink="/trial">
+              <mat-icon>flag</mat-icon><span>{{ 'app.trial' | translate }}</span>
+            </button>
+          }
           @if (auth.isAdmin) {
             <button mat-menu-item routerLink="/admin/chapters">
               <mat-icon>playlist_add</mat-icon><span>{{ 'app.addChapter' | translate }}</span>
@@ -124,6 +129,7 @@ export class AppComponent implements OnInit {
   constructor(
     public auth: AuthService,
     public theme: ThemeService,
+    public courseState: CourseStateService,
     locale: LocaleService,
     private destroyRef: DestroyRef,
     // App-weit instanziieren (siehe Klassen-Doku) — Referenz genügt.

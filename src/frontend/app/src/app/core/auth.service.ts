@@ -2,6 +2,7 @@ import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { CourseStateService } from './course-state.service';
 
 export interface AuthResponse {
   token: string;
@@ -22,6 +23,7 @@ export class AuthService {
   currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient, private router: Router, private injector: Injector) {}
+
 
   get isLoggedIn(): boolean {
     return this.getValidUser() !== null;
@@ -117,6 +119,8 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.storageKey);
     this.currentUserSubject.next(null);
+    // Kurszugangs-Cache leeren — der naechste User am Geraet startet mit unbekanntem Zustand.
+    this.injector.get(CourseStateService).clear();
     this.router.navigate(['/login']);
   }
 

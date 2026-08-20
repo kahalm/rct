@@ -42,6 +42,14 @@ public class ProfileController : BaseApiController
     }
 
     /// <summary>Konto loeschen (DSGVO-Anonymisierung) — verlangt das aktuelle Passwort.</summary>
+    /// <summary>Guidelines als gesehen markieren (Einmal-Popup je Konto; idempotent).</summary>
+    [HttpPut("guidelines-seen")]
+    public async Task<IActionResult> MarkGuidelinesSeen()
+    {
+        await _profileService.MarkGuidelinesSeenAsync(GetUserId());
+        return NoContent();
+    }
+
     [HttpDelete("account")]
     public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountDto dto)
     {

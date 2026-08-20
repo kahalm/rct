@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { CourseStateService } from '../../../core/course-state.service';
+import { Observable, tap } from 'rxjs';
 import { CalcGrade, CalcReviewPatch, toReviewBody } from './calc-review.util';
 
 /** Eine Stellung in der Sprungliste (leicht — ohne FEN/Kommentar, ohne Züge). */
@@ -55,6 +56,8 @@ export interface CalcBook {
   courseAccess?: boolean;
   /** Zuletzt angelegtes sichtbares Kapitel — Ziel des Training-Knopfs. */
   newestChapter?: string | null;
+  /** Hat dieses KONTO die Guidelines schon gesehen? (Einmal-Popup je User.) */
+  guidelinesSeen?: boolean;
   positions: CalcPositionListItem[];
   /** Summen je Kapitel. Fehlen sie, rechnet die Ansicht sie aus den Zeilen selbst. */
   chapters?: CalcChapterSummary[];
@@ -146,7 +149,7 @@ export interface CalcBackend {
 /** HTTP-Zugang zum Kalkulations-Modus (`/api/calculations`). */
 @Injectable({ providedIn: 'root' })
 export class CalculationService implements CalcBackend {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private courseState: CourseStateService) {}
 
   /**
    * Stellungen eines ÖFFENTLICH freigegebenen Kalkulationsbuchs — der einzige anonym erreichbare
@@ -159,7 +162,9 @@ export class CalculationService implements CalcBackend {
   }
 
   getBook(bookId: number): Observable<CalcBook> {
-    return this.http.get<CalcBook>(`/api/calculations/books/${bookId}`);
+    // Nebenbei den app-weiten Kurszugang nachziehen (Toolbar blendet damit „Trial" aus).
+    return this.http.get<CalcBook>(`/api/calculations/books/${bookId}`)
+      .pipe(tap(b => this.courseState.set(!!b.courseAccess)));
   }
 
   getPosition(bookPuzzleId: number): Observable<CalcPosition> {

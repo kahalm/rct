@@ -77,6 +77,9 @@ public class CalcBookDto
     /// Ziel des Training-Knopfs der Mitglieder-Startseite. Die Kapitel-Reihenfolge in
     /// <see cref="Chapters"/> haengt an den Round-Nummern und taugt dafuer nicht.</summary>
     public string? NewestChapter { get; set; }
+    /// <summary>Hat DIESES Konto die Guidelines schon gesehen? (Einmal-Popup vor dem ersten
+    /// Start — je User, nicht je Geraet; gesetzt via PUT /api/profile/guidelines-seen.)</summary>
+    public bool GuidelinesSeen { get; set; }
     public List<CalcPositionListItemDto> Positions { get; set; } = new();
     /// <summary>Kapitelsummen in der Reihenfolge des ersten Auftretens in <see cref="Positions"/>.</summary>
     public List<CalcChapterSummaryDto> Chapters { get; set; } = new();

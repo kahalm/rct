@@ -32,6 +32,10 @@ public class AppUser
     /// (<see cref="ChapterRelease"/>) — die Allgemeinheit erst ab <c>ReleaseAt</c>.</summary>
     public bool IsTester { get; set; } = false;
 
+    /// <summary>Wurden diesem KONTO die Trial-Guidelines schon einmal gezeigt? Serverseitig,
+    /// damit „einmalig" je User gilt — nicht je Geraet (localStorage war geraeteweit).</summary>
+    public bool GuidelinesSeen { get; set; } = false;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>Gesetzt bei Löschung/Anonymisierung — solche Konten können sich nicht mehr einloggen.</summary>

@@ -183,6 +183,8 @@ public class CalculationService
             // Hoechste sichtbare Stellungs-Id = zuletzt angelegtes Kapitel (Ids sind monoton).
             NewestChapter = positions.Where(p => p.Chapter != null)
                 .OrderByDescending(p => p.Id).Select(p => p.Chapter).FirstOrDefault(),
+            GuidelinesSeen = await _db.AppUsers.Where(u => u.Id == userId)
+                .Select(u => u.GuidelinesSeen).FirstOrDefaultAsync(ct),
             Positions = positions,
             Chapters = chapters,
             Points = chapters.Sum(c => c.Points),

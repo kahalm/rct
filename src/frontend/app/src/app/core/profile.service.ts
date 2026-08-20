@@ -31,4 +31,9 @@ export class ProfileService {
   update(dto: { username?: string; email?: string; currentPassword?: string }): Observable<Profile> {
     return this.http.put<Profile>(this.apiUrl, dto);
   }
+
+  /** Guidelines als gesehen markieren — das Einmal-Popup gilt je KONTO, nicht je Gerät. */
+  markGuidelinesSeen(): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/guidelines-seen`, {});
+  }
 }

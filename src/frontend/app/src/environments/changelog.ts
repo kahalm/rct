@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.7.1';
+export const APP_VERSION = '0.7.2';
 
 export interface ChangelogEntry {
   version: string;
@@ -10,6 +10,10 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.7.2', date: '2026-08-20', changes: [
+    { en: 'The guidelines popup now appears exactly once PER ACCOUNT (stored on the server) — previously it was per device: a second user on the same browser never saw it, and the same user saw it again on every new device. Reading the guidelines via the link or ? button also counts.' },
+    { en: 'Course members no longer see the "Trial" menu item — the start page stays reachable via the logo.' },
+  ] },
   { version: '0.7.1', date: '2026-08-20', changes: [
     { en: 'The Training button now reliably picks the most recently ADDED chapter (the server tracks it) — the chapter list order follows position numbers and could point at the wrong one.' },
   ] },

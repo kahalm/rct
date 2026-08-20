@@ -101,6 +101,14 @@ public class ProfileService
         return MapToDto(user);
     }
 
+    /// <summary>Markiert die Trial-Guidelines fuer dieses Konto als gesehen (idempotent) —
+    /// das Einmal-Popup gilt je USER, nicht je Geraet.</summary>
+    public async Task MarkGuidelinesSeenAsync(int userId)
+    {
+        await _db.AppUsers.Where(u => u.Id == userId && !u.GuidelinesSeen)
+            .ExecuteUpdateAsync(u => u.SetProperty(x => x.GuidelinesSeen, true));
+    }
+
     /// <summary>
     /// Loescht das Konto DSGVO-konform: persoenliche Analysen (CalculationTrees) und offene
     /// Reset-Tokens werden entfernt, die Identitaet in-place anonymisiert (Unique-Spalten bekommen
