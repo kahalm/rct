@@ -91,6 +91,17 @@
                 [disabled]="authorBusy || !authorChapter.trim() || !authorFens.trim()">
           <mat-icon>playlist_add</mat-icon> {{ 'trial.author.add' | translate }}
         </button>
+        @if (authorErrors.length > 0) {
+          <ul class="author-errors">
+            @for (e of authorErrors; track e.lineNumber) {
+              <li>
+                <strong>{{ 'trial.author.line' | translate: { line: e.lineNumber } }}:</strong>
+                {{ ('trial.author.err.' + e.reason) | translate }}
+                @if (e.text) { <code>{{ e.text }}</code> }
+              </li>
+            }
+          </ul>
+        }
       </mat-card-content>
     </mat-card>
   }

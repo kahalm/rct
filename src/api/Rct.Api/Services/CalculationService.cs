@@ -438,12 +438,6 @@ public class CalculationService
         Points = tree.Grade is int grade ? CalculationGrades.PointsFor(grade) : null,
     };
 
-    /// <summary>
-    /// Löscht den eigenen Baum zu einer Stellung. Idempotent (kein Baum → einfach nichts).
-    /// <para>Trägt die Zeile noch Rechenzeit, Festlegung oder Bewertung, bleibt sie mit LEEREM Baum
-    /// stehen: „Baum verwerfen" heißt Analyse neu anfangen, nicht die schon investierte Zeit und
-    /// die eigene Bewertung stillschweigend wegwerfen.</para>
-    /// </summary>
     /// <summary>Kapitel-Authoring (nur Admin, Controller prüft): hängt geparste FEN-Stellungen als
     /// neues/erweitertes Kapitel an ein Kalkulationsbuch. Rounds laufen JE KAPITEL ab der nächsten
     /// freien Nummer weiter; Titel werden fortlaufend vergeben. Gibt die Zahl der angelegten
@@ -482,6 +476,12 @@ public class CalculationService
         return positions.Count;
     }
 
+    /// <summary>
+    /// Löscht den eigenen Baum zu einer Stellung. Idempotent (kein Baum → einfach nichts).
+    /// <para>Trägt die Zeile noch Rechenzeit, Festlegung oder Bewertung, bleibt sie mit LEEREM Baum
+    /// stehen: „Baum verwerfen" heißt Analyse neu anfangen, nicht die schon investierte Zeit und
+    /// die eigene Bewertung stillschweigend wegwerfen.</para>
+    /// </summary>
     public async Task DeleteTreeAsync(int userId, int bookPuzzleId, bool isAdmin, CancellationToken ct = default)
     {
         var tree = await _db.CalculationTrees

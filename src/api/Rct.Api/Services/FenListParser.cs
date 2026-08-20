@@ -76,23 +76,22 @@ public static class FenListParser
         return line[(j + 1)..].TrimStart();
     }
 
-    /// <summary>Trennt einen Kommentar ab: alles nach dem ersten „|", oder ein „{…}" am Zeilenende.</summary>
+    /// <summary>Trennt einen Kommentar ab: alles nach dem ersten „|", oder ein „{…}" am Zeilenende.
+    /// Liegt die Pipe INNERHALB der Klammern („fen {a | b}"), gewinnt die Klammer-Form — sonst
+    /// zerrisse der Pipe-Split die Zeile und sie würde fälschlich als invalid_fen abgelehnt.</summary>
     private static (string Body, string? Comment) SplitComment(string line)
     {
+        var open = line.EndsWith('}') ? line.LastIndexOf('{') : -1;
         var pipe = line.IndexOf('|');
-        if (pipe >= 0)
+        if (pipe >= 0 && (open < 0 || pipe < open))
         {
             var comment = line[(pipe + 1)..].Trim();
             return (line[..pipe].Trim(), comment.Length == 0 ? null : comment);
         }
-        if (line.EndsWith('}'))
+        if (open >= 0)
         {
-            var open = line.LastIndexOf('{');
-            if (open >= 0)
-            {
-                var comment = line[(open + 1)..^1].Trim();
-                return (line[..open].Trim(), comment.Length == 0 ? null : comment);
-            }
+            var comment = line[(open + 1)..^1].Trim();
+            return (line[..open].Trim(), comment.Length == 0 ? null : comment);
         }
         return (line, null);
     }
@@ -129,10 +128,18 @@ public static class FenListParser
         {
             if (rank.Length == 0) return false;
             var files = 0;
+            var prevDigit = false;
             foreach (var c in rank)
             {
-                if (c is >= '1' and <= '8') files += c - '0';
-                else if (PieceChars.Contains(c)) files++;
+                if (c is >= '1' and <= '8')
+                {
+                    // Zwei Ziffern hintereinander („44") ergaeben zwar 8 Felder, sind aber keine
+                    // gueltige FEN — chess.js lehnt sie ab und die Stellung waere untrainierbar.
+                    if (prevDigit) return false;
+                    prevDigit = true;
+                    files += c - '0';
+                }
+                else if (PieceChars.Contains(c)) { prevDigit = false; files++; }
                 else return false;
             }
             if (files != 8) return false;

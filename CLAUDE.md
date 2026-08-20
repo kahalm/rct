@@ -56,8 +56,10 @@ Breakdown-Video: https://www.youtube.com/watch?v=EgDwm7AOLTg
   DTOs; Frontend CalculationComponent + Brett + calc-review) — auf „ein fixes Trial-Buch" reduziert
   (ohne Kurs-/Gruppen-/Chessable-/Serien-Kopplung).
 
-Nicht übernommen: Repertoires, Turniere, Puzzles, Freunde, Endless, Kurse-allgemein, Chessable-Import,
-Kalkulations-Serie/Scheduler, Benachrichtigungen, Offline/PWA — alles was nicht Auth oder Calc-Trial ist.
+Später doch übernommen (v0.3.0): Profil-Vertikale (Name/E-Mail/Passwort ändern, Konto löschen),
+Passwort-Reset per Mail, PWA (ngsw + Manifest) und TWA-Android-Build, Kapitel-Authoring
+(FenListParser verbatim). Nicht übernommen: Repertoires, Turniere, Puzzles, Freunde, Endless,
+Kurse-allgemein, Chessable-Import, Kalkulations-Serie/Scheduler, Benachrichtigungen.
 
 ## ⚠️ Angular-Version: 21.2 ist PFLICHT (nicht upgraden!)
 
@@ -83,7 +85,10 @@ RookHub (master, 22.1) trägt dieselbe latente Bombe und lebt nur von TranslateP
 
 ## Status
 
-Milestones 1–3 committet (Backend-Rauchtest 11/11, ng build grün, Compose-Smoke-Test grün).
-Remote: https://github.com/kahalm/rct (public, CI auf main). v0.2.0: AdminSeeder (ADMIN_* via
-compose, 'change_me' verweigert, kein Re-Seed) + 45-Minuten-Hinweis im Trainer (einmalig je Buch,
-localStorage-persistiert, kein Zwangs-Stopp). Kein Deploy — Hosting entscheidet der Betreiber.
+Remote: https://github.com/kahalm/rct (public, CI auf main). **LIVE als Stack /opt/stacks/rct**
+(https://rct.oberschmid.homes; Frontend :8092, API :5004; `:dev`-Images, Watchtower zieht nächtlich
+um 02:00 — ein main-Push deployed sich also von selbst). Secrets/Admin-Zugang: /opt/stacks/rct/.env;
+TWA-Keystore: /opt/stacks/rct/android-keystore/. v0.2.0 AdminSeeder + 45-Minuten-Hinweis;
+v0.3.0 Profil/Reset/Authoring/PWA/TWA; v0.3.1 Code-Review-Härtung + Dark-Mode (Standard dunkel).
+ACHTUNG: `compose up` im Repo-Verzeichnis kollidiert mit den Live-Containernamen (rct-api/…) —
+lokale Tests gegen Wegwerf-MariaDB + `dotnet run` fahren, NIE gegen den Live-Stack.

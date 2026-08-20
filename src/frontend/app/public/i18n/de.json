@@ -62,7 +62,12 @@
       "chapter": "Kapitelname",
       "fens": "Stellungen (eine FEN je Zeile)",
       "add": "Stellungen anlegen",
-      "result": "{{added}} Stellungen angelegt, {{errors}} Zeilen übersprungen"
+      "result": "{{added}} Stellungen angelegt, {{errors}} Zeilen übersprungen",
+      "line": "Zeile {{line}}",
+      "err": {
+        "invalid_fen": "keine gültige FEN",
+        "too_many": "Zeilen-Limit erreicht (max. 500 je Einfügen) — restliche Zeilen wurden übersprungen"
+      }
     }
   },
   "auth": {

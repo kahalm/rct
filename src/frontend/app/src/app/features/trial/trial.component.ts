@@ -90,6 +90,9 @@ export class TrialComponent implements OnInit, OnDestroy {
   authorChapter = '';
   authorFens = '';
   authorBusy = false;
+  /** Nicht verwertbare Memo-Zeilen des letzten Einfüge-Vorgangs (Zeilennummer + Grund + Originaltext) —
+   *  bleiben nach dem Anlegen sichtbar, damit der Admin die fehlerhaften Zeilen korrigieren kann. */
+  authorErrors: { lineNumber: number; reason: string; text?: string }[] = [];
 
   /** Memo-Format wie RookHub: eine FEN je Zeile, optional „| Kommentar" bzw. „{Kommentar}".
    *  Direkt-POST hier statt eines eigenen Services — es ist der einzige Authoring-Aufruf der App. */
@@ -97,12 +100,14 @@ export class TrialComponent implements OnInit, OnDestroy {
     const chapter = this.authorChapter.trim();
     if (!chapter || !this.authorFens.trim() || this.authorBusy) return;
     this.authorBusy = true;
-    this.http.post<{ added: number; errors: { lineNumber: number; reason: string }[] }>(
+    this.authorErrors = [];
+    this.http.post<{ added: number; errors: { lineNumber: number; reason: string; text?: string }[] }>(
       `/api/calculations/books/${this.bookId}/chapters`,
       { chapter, fenList: this.authorFens },
     ).subscribe({
       next: res => {
         this.authorBusy = false;
+        this.authorErrors = res.errors;
         const msg = this.translate.instant('trial.author.result', { added: res.added, errors: res.errors.length });
         if (res.errors.length > 0) this.snackbar.warn(msg); else this.snackbar.quick(msg);
         if (res.added > 0) {

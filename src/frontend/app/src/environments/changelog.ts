@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.3.1';
+export const APP_VERSION = '0.3.2';
 
 export interface ChangelogEntry {
   version: string;
@@ -9,6 +9,10 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.3.2', date: '2026-08-20', changes: [
+    { en: 'Chapter authoring got smarter: comments in braces may now contain „|“, positions with impossible digit runs (like „44/…“) are rejected up front instead of failing later on the board, and skipped lines are listed with line number, reason and the original text.', de: 'Kapitel-Authoring verbessert: Kommentare in geschweiften Klammern dürfen jetzt „|“ enthalten, Stellungen mit unmöglichen Ziffernfolgen (etwa „44/…“) werden sofort abgelehnt statt später am Brett zu scheitern, und übersprungene Zeilen werden mit Zeilennummer, Grund und Originaltext aufgelistet.' },
+    { en: 'Under the hood: the trial seeder no longer skips missing trial positions when chapters use the same round numbers, and long-expired password-reset tokens are cleaned up automatically.', de: 'Unter der Haube: Der Trial-Seeder überspringt fehlende Trial-Stellungen nicht mehr, wenn Kapitel dieselben Rundennummern verwenden, und längst abgelaufene Passwort-Reset-Tokens werden automatisch aufgeräumt.' },
+  ] },
   { version: '0.3.1', date: '2026-08-20', changes: [
     { en: 'Dark mode is here — and it is the default. The toolbar toggle cycles between dark, system and light; your choice is remembered on the device.', de: 'Dunkelmodus ist da — und Standard. Der Toolbar-Schalter wechselt zwischen Dunkel, System und Hell; die Wahl wird auf dem Gerät gemerkt.' },
     { en: 'Security hardening from a full code review: changing your password keeps you signed in (fresh session token) while all other sessions end immediately; changing your email now requires your current password; password reset links are rate-limited per account and sent in the background.', de: 'Sicherheits-Härtung aus einem vollständigen Code-Review: Nach einer Passwort-Änderung bleibt man angemeldet (frisches Sitzungs-Token), alle anderen Sitzungen enden sofort; eine E-Mail-Änderung verlangt jetzt das aktuelle Passwort; Reset-Links sind pro Konto limitiert und werden im Hintergrund verschickt.' },

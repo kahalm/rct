@@ -62,7 +62,12 @@
       "chapter": "Chapter name",
       "fens": "Positions (one FEN per line)",
       "add": "Add positions",
-      "result": "{{added}} positions added, {{errors}} lines skipped"
+      "result": "{{added}} positions added, {{errors}} lines skipped",
+      "line": "Line {{line}}",
+      "err": {
+        "invalid_fen": "not a valid FEN",
+        "too_many": "line limit reached (max 500 per paste) — remaining lines were skipped"
+      }
     }
   },
   "auth": {

@@ -38,7 +38,10 @@ public static class RctSeeder
         for (var i = 0; i < TrialFens.Length; i++)
         {
             var round = (i + 1).ToString();
-            if (book.Puzzles.Any(p => p.Round == round)) continue;   // idempotent
+            // Idempotenz NUR gegen die kapitel-losen Trial-Stellungen prüfen: Kapitel-Stellungen
+            // (Authoring) zählen ihre Rounds je Kapitel ebenfalls ab 1 — ein buchweiter Check würde
+            // fehlende Trial-Positionen nach einem DB-Rebuild still überspringen.
+            if (book.Puzzles.Any(p => p.Chapter == null && p.Round == round)) continue;
             db.BookPuzzles.Add(new BookPuzzle
             {
                 BookId = book.Id,

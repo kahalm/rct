@@ -78,6 +78,12 @@ public class PasswordResetService
             return;
         }
 
+        // Gelegenheits-Purge: laengst abgelaufene Tokens loeschen — die Tabelle waechst sonst
+        // unbegrenzt (Tokens werden nur entwertet, nie entfernt). 30 Tage Aufbewahrung reicht
+        // fuer Diagnose; ExecuteDelete materialisiert nichts.
+        var purgeBefore = DateTime.UtcNow - TimeSpan.FromDays(30);
+        await _db.PasswordResetTokens.Where(t => t.ExpiresAt < purgeBefore).ExecuteDeleteAsync(ct);
+
         // ERST die Mail verschicken, DANN alte Tokens entwerten + das neue persistieren.
         // Umgekehrt (entwerten+committen vor dem Versand) liess ein SMTP-Ausfall den User mit
         // NULL funktionierenden Links zurueck: der bereits zugestellte alte Link war entwertet,
