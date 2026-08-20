@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.7.3';
+export const APP_VERSION = '0.8.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -10,6 +10,9 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.8.0', date: '2026-08-20', changes: [
+    { en: 'New brand assets everywhere: app icon (PWA/Android incl. maskable and monochrome), favicon, toolbar mark, a hero image on the start page, a social preview card for shared links, and a branded header in password-reset emails.' },
+  ] },
   { version: '0.7.3', date: '2026-08-20', changes: [
     { en: 'Chapters are now always ordered by release date — in the trainer, the chapter picker and the admin schedule table (chapters without a date keep their creation order and come first). The Training button follows the same order.' },
     { en: 'Admins get quick links to "Add chapter" and "Users" right on the start page.' },

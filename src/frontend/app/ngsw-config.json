@@ -6,7 +6,7 @@
       "name": "app",
       "installMode": "prefetch",
       "updateMode": "prefetch",
-      "resources": { "files": ["/index.html", "/manifest.webmanifest", "/favicon.svg", "/*.css", "/*.js"] }
+      "resources": { "files": ["/index.html", "/manifest.webmanifest", "/favicon.png", "/*.css", "/*.js"] }
     },
     {
       "name": "i18n",
@@ -18,7 +18,8 @@
       "name": "assets",
       "installMode": "lazy",
       "updateMode": "prefetch",
-      "resources": { "files": ["/icons/**", "/piece/**", "/board/**"] }
+      "resources": { "files": ["/icons/**",
+          "/media/**", "/piece/**", "/board/**"] }
     }
   ],
   "dataGroups": [

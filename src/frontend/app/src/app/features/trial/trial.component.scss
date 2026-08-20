@@ -35,3 +35,8 @@
   mat-icon { color: #f5a623; }
 }
 .admin-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+.trial-hero {
+  width: 100%; max-width: 720px; max-height: 200px;
+  object-fit: cover; object-position: left center;
+  border-radius: 12px; display: block;
+}

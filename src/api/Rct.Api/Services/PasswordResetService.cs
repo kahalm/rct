@@ -92,7 +92,7 @@ public class PasswordResetService
         try
         {
             var link = BuildResetLink(rawToken);
-            var (subject, html, text) = BuildEmail(user.Username, link);
+            var (subject, html, text) = BuildEmail(user.Username, link, _config["App:BaseUrl"]?.TrimEnd('/'));
             await _email.SendAsync(user.Email, subject, html, text, ct);
         }
         catch (Exception ex)
@@ -169,9 +169,15 @@ public class PasswordResetService
         return $"{baseUrl}/reset-password?token={Uri.EscapeDataString(rawToken)}";
     }
 
-    private static (string subject, string html, string text) BuildEmail(string username, string link)
+    private static (string subject, string html, string text) BuildEmail(string username, string link, string? baseUrl)
     {
         var minutes = (int)TokenTtl.TotalMinutes;
+        // Marken-Header (public/media/email-header.png, design/07): nur mit absoluter Basis-URL —
+        // Mail-Clients laden Bilder ausschliesslich ueber absolute Adressen.
+        var header = string.IsNullOrEmpty(baseUrl)
+            ? string.Empty
+            : $"<img src=\"{baseUrl}/media/email-header.png\" alt=\"Real Chess Training\" width=\"600\" " +
+              "style=\"display:block;max-width:100%;height:auto;border-radius:8px;margin-bottom:12px\">";
         const string subject = "Real Chess Training — Passwort zurücksetzen";
         var text =
             $"Hallo {username},\n\n" +
@@ -181,6 +187,7 @@ public class PasswordResetService
             "Wenn du das nicht warst, kannst du diese E-Mail ignorieren — dein Passwort bleibt unverändert.\n\n" +
             "— Real Chess Training";
         var html =
+            header +
             $"<p>Hallo {System.Net.WebUtility.HtmlEncode(username)},</p>" +
             "<p>für dein Real-Chess-Training-Konto wurde ein Zurücksetzen des Passworts angefordert. " +
             $"Klicke auf den folgenden Link, um ein neues Passwort zu setzen (gültig für {minutes} Minuten):</p>" +

@@ -31,7 +31,7 @@ import { exitFullscreen, isFullscreen, onFullscreenChange } from './shared/fulls
   template: `
     <mat-toolbar class="rct-toolbar">
       <a routerLink="/trial" class="brand">
-        <img src="favicon.svg" alt="" width="28" height="28">
+        <img src="favicon.png" alt="" width="28" height="28" class="brand-img">
         <span>{{ 'app.title' | translate }}</span>
       </a>
       <span class="spacer"></span>
@@ -113,6 +113,7 @@ import { exitFullscreen, isFullscreen, onFullscreenChange } from './shared/fulls
     .app-fs-exit:hover, .app-fs-exit:focus-visible { opacity: 1; background: rgba(0, 0, 0, 0.6); }
     .rct-toolbar { position: sticky; top: 0; z-index: 100; }
     .brand { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; font-weight: 500; }
+    .brand-img { border-radius: 7px; }
     .spacer { flex: 1 1 auto; }
     .menu-user { padding: 8px 16px 6px; font-weight: 500; opacity: 0.7; font-size: 0.9rem; }
     .rct-main { flex: 1 1 auto; }
