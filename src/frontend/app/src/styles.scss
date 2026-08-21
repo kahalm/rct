@@ -124,15 +124,16 @@ body {
 .board-theme-wood .orientation-black .files :nth-child(even) { color: rgba(230, 209, 160, 0.9); }
 
 /* === Figuren-Sets (lokal gevendort: public/piece/<set>/, Lichess) ========= */
-/* Default = chessnut (Apache 2.0; die GPL-Sets cburnett + merida wurden entfernt —
-   kommerziell bedenklich, User-Entscheid 2026-08-20). Fallback-Regeln OHNE Wrapper-Klasse,
-   damit Figuren nie unsichtbar sind; die .piece-set-<name>-Regeln sind spezifischer. */
+/* Default = classic: die cburnett-ORIGINALE von Wikimedia Commons unter der BSD-Wahl der
+   Mehrfachlizenz (GFDL/CC BY-SA 3.0/BSD/GPLv2+) — die GPL-gelabelte Lichess-Kopie und merida
+   bleiben draussen (Lizenz-Bereinigung 2026-08-20/21, piece/LICENSES.md). Fallback-Regeln
+   OHNE Wrapper-Klasse, damit Figuren nie unsichtbar sind. */
 @each $role, $code in (pawn: 'P', knight: 'N', bishop: 'B', rook: 'R', queen: 'Q', king: 'K') {
-  cg-board piece.#{$role}.white { background-image: url('/piece/chessnut/w#{$code}.svg'); }
-  cg-board piece.#{$role}.black { background-image: url('/piece/chessnut/b#{$code}.svg'); }
+  cg-board piece.#{$role}.white { background-image: url('/piece/classic/w#{$code}.svg'); }
+  cg-board piece.#{$role}.black { background-image: url('/piece/classic/b#{$code}.svg'); }
 }
 
-$rh-piece-sets: fantasy, spatial, celtic, chessnut, rhosgfx;
+$rh-piece-sets: classic, fantasy, spatial, celtic, chessnut, rhosgfx;
 $rh-piece-roles: (pawn: 'P', knight: 'N', bishop: 'B', rook: 'R', queen: 'Q', king: 'K');
 @each $set in $rh-piece-sets {
   @each $role, $code in $rh-piece-roles {

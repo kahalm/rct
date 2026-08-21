@@ -23,7 +23,7 @@ interface ProfilePreferences {
 @Injectable({ providedIn: 'root' })
 export class PreferencesService {
   boardTheme = 'brown';
-  pieceSet = 'chessnut';
+  pieceSet = 'classic';
   stockfishDepth = 16;
   puzzleDifficulty = 'normal';
   bookStockfishDepth = 16;
@@ -188,10 +188,11 @@ export class PreferencesService {
 
 /** Entfernte/unbekannte gespeicherte Werte auf die Defaults ziehen (Sets/Texturen wurden aus
  *  Lizenzgruenden entfernt — alte localStorage-/Server-Werte duerfen kein leeres Brett ergeben). */
-const VALID_PIECE_SETS = ['fantasy', 'spatial', 'celtic', 'chessnut', 'rhosgfx'];
+const VALID_PIECE_SETS = ['classic', 'fantasy', 'spatial', 'celtic', 'chessnut', 'rhosgfx'];
 const VALID_BOARD_THEMES = ['brown', 'blue', 'green', 'gray', 'wood'];
 function sanitizePieceSet(v: string | null): string {
-  return v && VALID_PIECE_SETS.includes(v) ? v : 'chessnut';
+  if (v === 'cburnett') return 'classic';   // Alt-Wert: dasselbe Design, saubere Quelle
+  return v && VALID_PIECE_SETS.includes(v) ? v : 'classic';
 }
 function sanitizeBoardTheme(v: string | null): string {
   return v && VALID_BOARD_THEMES.includes(v) ? v : 'brown';

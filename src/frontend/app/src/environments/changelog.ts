@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.8.1';
+export const APP_VERSION = '0.8.2';
 
 export interface ChangelogEntry {
   version: string;
@@ -10,6 +10,9 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.8.2', date: '2026-08-21', changes: [
+    { en: 'The Classic pieces are back — same beautiful design, clean source: the original SVGs by Colin M.L. Burnett are multi-licensed on Wikimedia Commons, and we now use them under the commercial-friendly BSD option. Classic is the default again; saved "Classic" preferences from before are restored automatically.' },
+  ] },
   { version: '0.8.1', date: '2026-08-20', changes: [
     { en: 'License cleanup for commercial use: the GPL piece sets (Classic/cburnett and Merida) and the AGPL board textures (wood, water, marble, metal, leather, maple) were removed. Chessnut (Apache 2.0) is the new default; all remaining sets are MIT, Apache 2.0 or CC0. Saved preferences pointing at removed options fall back automatically.' },
   ] },

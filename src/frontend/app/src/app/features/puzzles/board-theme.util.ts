@@ -14,6 +14,9 @@ export const BOARD_THEMES: { key: string; name: string; light: string; dark: str
 // Nur kommerziell unbedenkliche Sets (MIT/Apache-2.0/CC0, siehe public/piece/LICENSES.md).
 // cburnett + merida (GPLv2+) wurden entfernt (User-Entscheid, 2026-08-20).
 export const PIECE_SETS = [
+  // 'classic' = die cburnett-ORIGINALE von Wikimedia Commons (Mehrfachlizenz, hier unter
+  // BSD-3-Clause genutzt) — NICHT die GPL-gelabelte Lichess-Kopie. Siehe piece/LICENSES.md.
+  { key: 'classic', name: 'Classic', preview: '/piece/classic/wN.svg' },
   { key: 'fantasy', name: 'Fantasy', preview: '/piece/fantasy/wN.svg' },
   { key: 'spatial', name: 'Spatial', preview: '/piece/spatial/wN.svg' },
   { key: 'celtic', name: 'Celtic', preview: '/piece/celtic/wN.svg' },

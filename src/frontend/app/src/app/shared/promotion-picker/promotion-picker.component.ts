@@ -105,7 +105,7 @@ export class PromotionPickerComponent implements OnInit {
   }
 
   image(piece: PromotionPiece): string {
-    const set = this.pieceSet === '_crazy' ? 'chessnut' : (this.pieceSet || 'chessnut');
+    const set = this.pieceSet === '_crazy' ? 'classic' : (this.pieceSet || 'classic');
     return `url('/piece/${set}/${PromotionPickerComponent.NAMES[this.color][piece]}.svg')`;
   }
 }
