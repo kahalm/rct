@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.8.2';
+export const APP_VERSION = '0.8.3';
 
 export interface ChangelogEntry {
   version: string;
@@ -10,6 +10,9 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.8.3', date: '2026-08-21', changes: [
+    { en: 'The chapter schedule table on the admin page fits the screen without horizontal scrolling (wider page, compact date fields, the video column takes the remaining space).' },
+  ] },
   { version: '0.8.2', date: '2026-08-21', changes: [
     { en: 'The Classic pieces are back — same beautiful design, clean source: the original SVGs by Colin M.L. Burnett are multi-licensed on Wikimedia Commons, and we now use them under the commercial-friendly BSD option. Classic is the default again; saved "Classic" preferences from before are restored automatically.' },
   ] },

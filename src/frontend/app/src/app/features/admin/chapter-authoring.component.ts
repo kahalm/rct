@@ -49,7 +49,7 @@ interface ChapterRow {
   template: `
     <div class="author-container">
       <h1>{{ 'admin.author.title' | translate }}</h1>
-      <mat-card>
+      <mat-card class="author-card">
         <mat-card-content class="author-form">
           <p class="hint">{{ 'admin.author.hint' | translate }}</p>
           <mat-form-field appearance="outline" class="author-name">
@@ -146,8 +146,9 @@ interface ChapterRow {
     </div>
   `,
   styles: [`
-    .author-container { max-width: 760px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .author-container { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     h1 { font-size: 1.4rem; margin: 0 0 1rem; }
+    .author-card { max-width: 760px; }
     .author-form { display: flex; flex-direction: column; gap: 0.75rem; padding-top: 1rem; }
     .hint { margin: 0; opacity: 0.75; font-size: 0.9rem; }
     mat-form-field { width: 100%; }
@@ -156,11 +157,17 @@ interface ChapterRow {
     .release-row mat-form-field { flex: 1 1 220px; }
     .chapters-card { margin-top: 1.25rem; }
     .chapters-table-wrap { overflow-x: auto; }
-    .chapters-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-    .chapters-table th { text-align: left; font-weight: 500; opacity: 0.7; padding: 8px 10px; border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent); }
-    .chapters-table td { padding: 8px 10px; border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent); }
-    .video-input { min-width: 180px; }
-    .dt { background: transparent; color: inherit; border: 1px solid color-mix(in srgb, currentColor 30%, transparent); border-radius: 6px; padding: 6px 8px; font: inherit; color-scheme: inherit; }
+    .chapters-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    .chapters-table th { text-align: left; font-weight: 500; opacity: 0.7; padding: 8px 8px; border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent); white-space: nowrap; }
+    .chapters-table td { padding: 8px 8px; border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent); vertical-align: middle; }
+    /* Spaltenbreiten: Termine fest-kompakt, Video nimmt den Rest, Name/Zahl/Knopf schmal —
+       damit die Zeile auf dem Desktop OHNE horizontales Scrollen auskommt (User-Report). */
+    .chapters-table td:nth-child(1) { white-space: nowrap; font-weight: 500; }
+    .chapters-table td:nth-child(2) { text-align: center; width: 1%; }
+    .chapters-table td:nth-child(3), .chapters-table td:nth-child(4) { width: 178px; }
+    .chapters-table td:nth-child(6) { width: 1%; }
+    .video-input { width: 100%; min-width: 140px; box-sizing: border-box; }
+    .dt { background: transparent; color: inherit; border: 1px solid color-mix(in srgb, currentColor 30%, transparent); border-radius: 6px; padding: 6px 6px; font: inherit; font-size: 0.88rem; color-scheme: inherit; width: 170px; box-sizing: border-box; }
     .muted { opacity: 0.7; }
     .author-errors {
       margin: 4px 0 0; padding-left: 20px; font-size: 0.85rem; color: #e57373;
