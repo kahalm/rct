@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.8.3';
+export const APP_VERSION = '0.8.4';
 
 export interface ChangelogEntry {
   version: string;
@@ -10,6 +10,9 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.8.4', date: '2026-08-21', changes: [
+    { en: 'The chapter clock now follows you across devices: it starts from the time already recorded on the server for that chapter instead of a per-device counter (which showed 0:00 on a new device or after an import). The counter is also kept per account, so switching users in the same browser no longer shows someone else\'s time.' },
+  ] },
   { version: '0.8.3', date: '2026-08-21', changes: [
     { en: 'The chapter schedule table on the admin page fits the screen without horizontal scrolling (wider page, compact date fields, the video column takes the remaining space).' },
   ] },

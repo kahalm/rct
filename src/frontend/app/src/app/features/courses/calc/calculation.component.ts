@@ -382,11 +382,20 @@ export class CalculationComponent implements OnInit, OnDestroy {
     if (key === this.timerChapterKey) return;
     if (this.timerChapterKey !== null) this.persistTimer();
     this.timerChapterKey = key;
-    this.timerSeconds = this.readTimerStore()[key] ?? 0;
+    // UNTERGRENZE = die serverseitig auf den Stellungen des Kapitels verbuchte Zeit: die Uhr
+    // schöpft ihre Sekunden genau dorthin ab, darf also nie WENIGER zeigen. Auf einem neuen
+    // Gerät oder nach einem Daten-Import stand der lokale Topf sonst auf 0:00, obwohl die
+    // Zeit längst am Server lag (User-Report „Gesamtzeit nicht übertragen").
+    const serverSeconds = this.positions
+      .filter(p => (p.chapter ?? '') === key)
+      .reduce((sum, p) => sum + (p.secondsSpent ?? 0), 0);
+    this.timerSeconds = Math.max(this.readTimerStore()[key] ?? 0, serverSeconds);
   }
 
   private timerStorageKey(): string {
-    return `rookhub_calc_timer_${this.bookId}`;
+    // Je KONTO und Buch — der alte geräteweite Schlüssel (rookhub_calc_timer_<bookId>) zeigte
+    // nach einem Kontowechsel am selben Browser die fremde Zeit.
+    return `rct_calc_timer_${this.auth.currentUser?.userId ?? 'anon'}_${this.bookId}`;
   }
 
   private readTimerStore(): Record<string, number> {
