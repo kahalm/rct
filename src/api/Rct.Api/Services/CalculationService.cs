@@ -606,6 +606,122 @@ public class CalculationService
             .ToList();
     }
 
+    /// <summary>Die Stellungen EINES Kapitels (NUR Admin-Authoring): FEN + Kommentar + Zahl der
+    /// daran haengenden Analysen — Grundlage fuers Bearbeiten (Memo-Text im Frontend).</summary>
+    /// <exception cref="KeyNotFoundException">Buch oder Kapitel unbekannt.</exception>
+    public async Task<List<ChapterPositionDto>> GetChapterPositionsAsync(int bookId, string chapter,
+        CancellationToken ct = default)
+    {
+        await EnsureBookAccessAsync(bookId, ct);
+        var name = (chapter ?? string.Empty).Trim();
+        var rows = await _db.BookPuzzles
+            .Where(bp => bp.BookId == bookId && bp.Chapter == name)
+            .OrderBy(bp => bp.Round.Length).ThenBy(bp => bp.Round).ThenBy(bp => bp.Id)
+            .Select(bp => new ChapterPositionDto
+            {
+                Id = bp.Id,
+                Round = bp.Round,
+                Fen = bp.Fen,
+                Comment = bp.Comment,
+                Trees = _db.CalculationTrees.Count(t => t.BookPuzzleId == bp.Id),
+            })
+            .ToListAsync(ct);
+        if (rows.Count == 0) throw new KeyNotFoundException("Chapter not found.");
+        return rows;
+    }
+
+    /// <summary>
+    /// Ersetzt den Inhalt eines Kapitels durch die uebergebene Liste (Admin-Bearbeiten) und setzt
+    /// Name/Termine/Video. Eine Stellung mit UNVERAENDERTER FEN behaelt ihre Id — und damit alle
+    /// Analysen, Festlegungen und Zeiten, die daran haengen; nur wirklich verschwundene Stellungen
+    /// werden samt ihrer Analysen geloescht (FK ist Restrict, die Baeume muessen zuerst weg).
+    /// Rounds/Titel werden in Listenreihenfolge neu vergeben.
+    /// </summary>
+    /// <exception cref="KeyNotFoundException">Buch/Kapitel unbekannt.</exception>
+    /// <exception cref="ArgumentException">Leerer Name oder leere Liste.</exception>
+    /// <exception cref="InvalidOperationException">Umbenennen auf ein bestehendes Kapitel.</exception>
+    public async Task<(int Kept, int Added, int Removed)> ReplaceChapterAsync(int bookId,
+        string originalChapter, string chapter, IReadOnlyList<FenListParser.ParsedFen> positions,
+        DateTime? releaseAt, DateTime? testerReleaseAt, string? videoUrl, CancellationToken ct = default)
+    {
+        var isCalc = await _db.Books.Where(b => b.Id == bookId).Select(b => (bool?)b.IsCalculation).FirstOrDefaultAsync(ct);
+        if (isCalc != true) throw new KeyNotFoundException("Book not found.");
+
+        var oldName = (originalChapter ?? string.Empty).Trim();
+        var name = (chapter ?? string.Empty).Trim();
+        if (name.Length is 0 or > 200) throw new ArgumentException("Chapter name must be 1-200 characters.");
+        // Ein leeres Kapitel waere ein Loeschen mit der falschen Geste — dafuer gibt es keinen Weg.
+        if (positions.Count == 0) throw new ArgumentException("A chapter needs at least one position.");
+
+        var existing = await _db.BookPuzzles
+            .Where(bp => bp.BookId == bookId && bp.Chapter == oldName)
+            .OrderBy(bp => bp.Id).ToListAsync(ct);
+        if (existing.Count == 0) throw new KeyNotFoundException("Chapter not found.");
+        if (!string.Equals(name, oldName, StringComparison.Ordinal)
+            && await _db.BookPuzzles.AnyAsync(bp => bp.BookId == bookId && bp.Chapter == name, ct))
+            throw new InvalidOperationException("A chapter with that name already exists.");
+
+        // FEN -> noch freie Alt-Zeilen (Duplikate der gleichen Stellung der Reihe nach vergeben).
+        var freeByFen = existing.GroupBy(bp => bp.Fen, StringComparer.Ordinal)
+            .ToDictionary(g => g.Key, g => new Queue<BookPuzzle>(g), StringComparer.Ordinal);
+        var kept = new HashSet<int>();
+        var round = 1;
+        var added = 0;
+        foreach (var p in positions)
+        {
+            BookPuzzle? row = null;
+            if (freeByFen.TryGetValue(p.Fen, out var queue) && queue.Count > 0) row = queue.Dequeue();
+            if (row == null)
+            {
+                row = new BookPuzzle { BookId = bookId, Fen = p.Fen, Moves = string.Empty, StartPly = 0 };
+                _db.BookPuzzles.Add(row);
+                added++;
+            }
+            else kept.Add(row.Id);
+            row.Chapter = name;
+            row.Round = round.ToString();
+            row.Title = $"Position {round}";
+            row.Comment = p.Comment;
+            round++;
+        }
+
+        var obsolete = existing.Where(bp => !kept.Contains(bp.Id)).ToList();
+        if (obsolete.Count > 0)
+        {
+            var ids = obsolete.Select(bp => bp.Id).ToList();
+            // Baeume sind NICHT getrackt -> ExecuteDelete ist hier sicher (und laedt kein LONGTEXT);
+            // die Stellungen selbst gehen ueber den ChangeTracker, damit SaveChanges die
+            // Reihenfolge gegen den Restrict-FK einhaelt.
+            await _db.CalculationTrees.Where(t => ids.Contains(t.BookPuzzleId)).ExecuteDeleteAsync(ct);
+            _db.BookPuzzles.RemoveRange(obsolete);
+        }
+
+        // Metadaten: bestehenden Eintrag MITZIEHEN (Umbenennung), sonst legte der Upsert auf den
+        // neuen Namen einen zweiten an und der alte blieb als Waise stehen.
+        var wantsMeta = releaseAt != null || testerReleaseAt != null || !string.IsNullOrWhiteSpace(videoUrl);
+        var release = await _db.ChapterReleases
+            .FirstOrDefaultAsync(r => r.BookId == bookId && r.Chapter == oldName, ct);
+        if (release == null && wantsMeta)
+        {
+            release = new ChapterRelease { BookId = bookId, Chapter = name };
+            _db.ChapterReleases.Add(release);
+        }
+        if (release != null)
+        {
+            if (!wantsMeta) _db.ChapterReleases.Remove(release);   // alles leer = sofort frei
+            else
+            {
+                release.Chapter = name;
+                release.ReleaseAt = releaseAt;
+                release.TesterReleaseAt = testerReleaseAt;
+                release.VideoUrl = string.IsNullOrWhiteSpace(videoUrl) ? null : videoUrl.Trim();
+            }
+        }
+
+        await _db.SaveChangesAsync(ct);
+        return (kept.Count, added, obsolete.Count);
+    }
+
     /// <summary>Freischalt-Termine eines Kapitels setzen; beide null loescht den Eintrag
     /// (Kapitel sofort fuer alle Freigeschalteten sichtbar). 404 bei unbekanntem Kapitel.</summary>
     public async Task SetChapterReleaseAsync(int bookId, string chapter,

@@ -255,6 +255,43 @@ public class SetChapterReleaseDto
     public string? VideoUrl { get; set; }
 }
 
+/// <summary>Eine Stellung eines Kapitels fuers Admin-Bearbeiten (FEN + Kommentar + Anzahl
+/// daran haengender Analysen, damit sichtbar ist was ein Entfernen kostet).</summary>
+public class ChapterPositionDto
+{
+    public int Id { get; set; }
+    public string Round { get; set; } = string.Empty;
+    public string Fen { get; set; } = string.Empty;
+    public string? Comment { get; set; }
+    public int Trees { get; set; }
+}
+
+/// <summary>Kapitel ERSETZEN (Admin-Bearbeiten): die Liste ist danach der Kapitelinhalt.
+/// Stellungen mit unveraenderter FEN behalten ihre Id (und damit alle Analysen daran);
+/// fehlende werden samt Analysen geloescht. <see cref="OriginalChapter"/> erlaubt Umbenennen.</summary>
+public class ReplaceChapterDto
+{
+    [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MaxLength(200)]
+    public string OriginalChapter { get; set; } = string.Empty;
+    [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MaxLength(200)]
+    public string Chapter { get; set; } = string.Empty;
+    [System.ComponentModel.DataAnnotations.Required]
+    public string FenList { get; set; } = string.Empty;
+    public DateTime? ReleaseAt { get; set; }
+    public DateTime? TesterReleaseAt { get; set; }
+    [System.ComponentModel.DataAnnotations.MaxLength(500)]
+    public string? VideoUrl { get; set; }
+}
+
+/// <summary>Ergebnis des Ersetzens: behalten / neu / entfernt (+ verworfene Zeilen).</summary>
+public class ReplaceChapterResultDto
+{
+    public int Kept { get; set; }
+    public int Added { get; set; }
+    public int Removed { get; set; }
+    public List<FenListParser.FenError> Errors { get; set; } = new();
+}
+
 /// <summary>Ergebnis des Kapitel-Authorings: angelegte Stellungen + nicht verwertbare Zeilen.</summary>
 public class AddChapterResultDto
 {

@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.8.4';
+export const APP_VERSION = '0.9.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -10,6 +10,12 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.9.0', date: '2026-09-21', changes: [
+    { en: 'Chapters can be edited: the new pencil button in the schedule table pulls a chapter back into the form above — name, positions, dates and video. Positions whose FEN stays the same keep their saved analyses; every line has to be valid, otherwise nothing is saved.' },
+    { en: 'The form now proposes the next training slot: release and tester dates are the last ones plus 7 days, and the chapter name defaults to that date. Everything stays editable.' },
+    { en: 'Pasted lists are more forgiving: a leading „:", „." or „-" without a number no longer makes a line invalid.' },
+    { en: 'The chapter table lists the newest chapter first.' },
+  ] },
   { version: '0.8.4', date: '2026-08-21', changes: [
     { en: 'The chapter clock now follows you across devices: it starts from the time already recorded on the server for that chapter instead of a per-device counter (which showed 0:00 on a new device or after an import). The counter is also kept per account, so switching users in the same browser no longer shows someone else\'s time.' },
   ] },

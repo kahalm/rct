@@ -102,6 +102,39 @@ public class CalculationController : BaseApiController
         catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
     }
 
+    /// <summary>Die Stellungen eines Kapitels (NUR Admin) — Grundlage fuers Bearbeiten.
+    /// Kapitelname als QUERY-Parameter, nicht in der Route: Namen duerfen „/" enthalten.</summary>
+    [HttpGet("books/{bookId}/chapters/positions")]
+    public async Task<ActionResult<List<ChapterPositionDto>>> GetChapterPositions(int bookId,
+        [FromQuery] string chapter, CancellationToken ct)
+    {
+        if (!IsAdmin) return Forbid();
+        try { return Ok(await _service.GetChapterPositionsAsync(bookId, chapter ?? string.Empty, ct)); }
+        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+    }
+
+    /// <summary>Kapitel ERSETZEN (NUR Admin): Name, Stellungsliste, Termine und Video in einem
+    /// Zug. Anders als beim Anlegen muss JEDE Zeile gueltig sein — eine verworfene Zeile wuerde
+    /// sonst still eine Stellung entfernen; bei Fehlern wird nichts gespeichert (400 + Zeilen).</summary>
+    [HttpPut("books/{bookId}/chapters")]
+    public async Task<ActionResult<ReplaceChapterResultDto>> ReplaceChapter(int bookId,
+        [FromBody] ReplaceChapterDto dto, CancellationToken ct)
+    {
+        if (!IsAdmin) return Forbid();
+        var parsed = FenListParser.Parse(dto.FenList);
+        if (parsed.Errors.Count > 0)
+            return BadRequest(new { message = "Some lines are not valid — nothing was saved.", errors = parsed.Errors });
+        try
+        {
+            var (kept, added, removed) = await _service.ReplaceChapterAsync(bookId, dto.OriginalChapter,
+                dto.Chapter, parsed.Positions, dto.ReleaseAt, dto.TesterReleaseAt, dto.VideoUrl, ct);
+            return Ok(new ReplaceChapterResultDto { Kept = kept, Added = added, Removed = removed });
+        }
+        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+    }
+
     /// <summary>Freischalt-Termine eines Kapitels setzen (NUR Admin). Kapitelname im Body,
     /// nicht in der Route — Namen duerfen Sonderzeichen (auch „/") enthalten.
     /// Beide Termine null = Kapitel sofort fuer alle Freigeschalteten sichtbar.</summary>

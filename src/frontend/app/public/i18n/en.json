@@ -323,7 +323,15 @@
       "noChapters": "No chapters yet.",
       "releaseSaved": "Release schedule saved.",
       "tableHint": "Clear both dates and save to release a chapter immediately.",
-      "videoUrl": "Review video (URL)"
+      "videoUrl": "Review video (URL)",
+      "pageTitle": "Chapters",
+      "newTitle": "Add chapter",
+      "editTitle": "Edit chapter „{{chapter}}“",
+      "update": "Save changes",
+      "edit": "Edit positions",
+      "editHint": "This list replaces the chapter: positions with an unchanged FEN keep their saved analyses, removed ones lose them. Every line must be valid — otherwise nothing is saved.",
+      "editTrees": "Saved analyses on these positions: {{trees}}.",
+      "updated": "Chapter saved — {{kept}} kept, {{added}} added, {{removed}} removed."
     },
     "users": {
       "title": "Users",

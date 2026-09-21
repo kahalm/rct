@@ -40,7 +40,6 @@ import { LocalCalculationBackend } from './calc-local.backend';
 import { CalcGradeDialogComponent, CalcGradeDialogResult } from './calc-grade-dialog.component';
 import { CalcSettingsDialogComponent } from './calc-settings-dialog.component';
 import { CalcTimelimitDialogComponent } from './calc-timelimit-dialog.component';
-import { BoardFullscreenButtonComponent } from '../../../shared/fullscreen/board-fullscreen-button.component';
 import { fullscreenSupported, isFullscreen, onFullscreenChange, toggleFullscreen } from '../../../shared/fullscreen/fullscreen.util';
 import { GuidelinesDialogComponent, GuidelinesDialogData } from '../../trial/guidelines-dialog.component';
 import { TRIAL_VIDEO_URL } from '../../trial/trial.component';
@@ -123,7 +122,7 @@ function normChapter(value: string | null | undefined): string {
     CommonModule, FormsModule, MatButtonModule, MatCardModule, MatIconModule, MatFormFieldModule,
     MatSelectModule, MatMenuModule, MatProgressSpinnerModule, MatTooltipModule, TranslatePipe,
     RouterLink,
-    PuzzleBoardComponent, CalcLinesComponent, BoardFullscreenButtonComponent,
+    PuzzleBoardComponent, CalcLinesComponent,
   ],
   templateUrl: './calculation.component.html',
   styleUrls: ['./calculation.component.scss'],

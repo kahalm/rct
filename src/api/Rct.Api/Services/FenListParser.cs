@@ -63,17 +63,22 @@ public static class FenListParser
         return new Result(positions, errors);
     }
 
-    /// <summary>Entfernt eine führende Nummerierung („1:", „2.", „3)", „4 -").</summary>
+    /// <summary>
+    /// Entfernt eine führende Nummerierung („1:", „2.", „3)", „4 -"). Die ZAHL darf fehlen
+    /// („: fen", „- fen", „. fen"): beim Kopieren aus Listen bleibt oft nur das Trennzeichen
+    /// stehen, und eine FEN beginnt nie mit „:.)-" — die Zeile wäre sonst unbrauchbar
+    /// (User-Report 2026-09-21: „Line 1: not a valid FEN : r2q1rk1/…").
+    /// </summary>
     private static string StripIndex(string line)
     {
         var i = 0;
         while (i < line.Length && char.IsDigit(line[i])) i++;
-        if (i == 0) return line;                                  // keine Nummer davor
         var j = i;
         while (j < line.Length && line[j] == ' ') j++;
         if (j >= line.Length || (line[j] != ':' && line[j] != '.' && line[j] != ')' && line[j] != '-'))
             return line;                                          // Zahl gehört zur FEN? → unverändert
-        return line[(j + 1)..].TrimStart();
+        var rest = line[(j + 1)..].TrimStart();
+        return rest.Length == 0 ? line : rest;                    // „-" allein ist keine Nummerierung
     }
 
     /// <summary>Trennt einen Kommentar ab: alles nach dem ersten „|", oder ein „{…}" am Zeilenende.
