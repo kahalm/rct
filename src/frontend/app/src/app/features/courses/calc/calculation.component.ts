@@ -48,6 +48,7 @@ import {
 } from './calc-timer-dialog.component';
 import { readCalcNoticeDismissed, writeCalcNoticeDismissed } from './calc-local.util';
 import { AuthService } from '../../../core/auth.service';
+import { ANALYSIS_URL } from '../../../../environments/environment';
 
 /** Stellungen EINES Kapitels — die Arbeitseinheit dieses Modus, samt der Kapitel-Summen. */
 export interface CalcPositionGroup {
@@ -1413,27 +1414,27 @@ export class CalculationComponent implements OnInit, OnDestroy {
     );
   }
 
-  /**
-   * Öffnet die Stellung AM CURSOR im Lichess-Analysebrett (neuer Tab) — der Knopf erscheint,
-   * sobald die Stellung bewertet ist (User-Entscheid 2026-09-21: erst rechnen und bewerten,
-   * dann nachsehen).
-   *
-   * RCT hat bewusst KEINEN eigenen Analyse-Modus; RookHubs `/analysis`-Route ist hier nicht
-   * portiert. Der alte Navigate dorthin war toter Code und landete über `**` auf /trial —
-   * dieselbe Fehlerklasse wie die kopierten `app-navbar`-Selektoren.
-   */
   /** Analyse EINER Linie (Lupe in der Linienliste): die Stellung an ihrem Ende öffnen —
    *  die Knoten tragen ihre FEN, ein Cursor-Umweg ist dafür nicht nötig. */
   analyzeLine(leafId: number): void {
     this.openAnalysis(findNode(this.tree, leafId)?.fen || undefined);
   }
 
+  /**
+   * Öffnet die Stellung AM CURSOR in RookHubs Analysebrett (neuer Tab, Adresse in
+   * {@link ANALYSIS_URL}) — der Knopf erscheint, sobald die Stellung bewertet ist
+   * (User-Entscheid 2026-09-21: erst rechnen und festlegen, dann nachsehen).
+   *
+   * RCT hat bewusst KEINEN eigenen Engine-Modus. RookHubs `/analysis` liest `fen` und
+   * `orientation` aus der Query und ist ohne Anmeldung nutzbar; einen `moves`-Parameter kennt
+   * es NICHT — übergeben wird darum die Stellung am Cursor, also das Ende der gerechneten
+   * Linie. (Der frühere Navigate auf die EIGENE `/analysis`-Route war toter Code: die Route
+   * ist in RCT nie portiert worden, der Klick landete über `**` auf /trial.)
+   */
   openAnalysis(fen?: string): void {
     const target = (fen || this.cursorFen || this.startFen || '').trim();
     if (!target) return;
-    // Lichess erwartet die FEN IM PFAD mit Unterstrichen statt Leerzeichen (Slashes bleiben,
-    // encodeURIComponent würde sie zerlegen).
-    const url = `https://lichess.org/analysis/standard/${target.replace(/ /g, '_')}`;
+    const url = `${ANALYSIS_URL}?fen=${encodeURIComponent(target)}&orientation=${this.orientation}`;
     window.open(url, '_blank', 'noopener');
   }
 

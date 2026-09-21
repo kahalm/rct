@@ -288,7 +288,7 @@
       "ready": "All positions committed — time for the breakdown video.",
       "watch": "Watch the breakdown video"
     },
-    "analyzeHint": "Open the position at the cursor on lichess.org (new tab) — available once you have rated this position."
+    "analyzeHint": "Open the position at the cursor in the RookHub analysis board (new tab) — available once you have rated this position."
   },
   "courses": {
     "noChapter": "Trial"

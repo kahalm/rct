@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.9.1';
+export const APP_VERSION = '0.9.2';
 
 export interface ChangelogEntry {
   version: string;
@@ -10,6 +10,9 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.9.2', date: '2026-09-21', changes: [
+    { en: 'The „Analyze" button now opens the RookHub analysis board (with its engine) instead of an external site — no extra account needed.' },
+  ] },
   { version: '0.9.1', date: '2026-09-21', changes: [
     { en: 'Once you have rated a position, an „Analyze" button appears next to the result: it opens the position at your cursor on lichess.org in a new tab — so you calculate and commit first, and look things up afterwards. The magnifier on a single line opens that line’s final position.' },
   ] },
