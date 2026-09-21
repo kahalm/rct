@@ -1,6 +1,6 @@
 // Single-Source der App-Version (Konvention aus RookHub übernommen: environment.ts re-exportiert
 // APP_VERSION von hier; im Changelog nur typografische Anführungszeichen „…" verwenden).
-export const APP_VERSION = '0.9.0';
+export const APP_VERSION = '0.9.1';
 
 export interface ChangelogEntry {
   version: string;
@@ -10,6 +10,9 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '0.9.1', date: '2026-09-21', changes: [
+    { en: 'Once you have rated a position, an „Analyze" button appears next to the result: it opens the position at your cursor on lichess.org in a new tab — so you calculate and commit first, and look things up afterwards. The magnifier on a single line opens that line’s final position.' },
+  ] },
   { version: '0.9.0', date: '2026-09-21', changes: [
     { en: 'Chapters can be edited: the new pencil button in the schedule table pulls a chapter back into the form above — name, positions, dates and video. Positions whose FEN stays the same keep their saved analyses; every line has to be valid, otherwise nothing is saved.' },
     { en: 'The form now proposes the next training slot: release and tester dates are the last ones plus 7 days, and the chapter name defaults to that date. Everything stays editable.' },

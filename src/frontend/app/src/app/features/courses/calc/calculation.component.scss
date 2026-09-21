@@ -685,3 +685,6 @@
   .calc-video-title mat-icon { color: #66bb6a; }
 }
 .calc-video-title { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1rem; }
+
+/* Analyse-Knopf (erscheint nach dem Bewerten) — gleiche Optik wie der Ergebnis-Knopf. */
+.calc-analyze-btn { margin-left: 8px; }

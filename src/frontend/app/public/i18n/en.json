@@ -274,10 +274,7 @@
     "copyFen": "Copy FEN",
     "fenCopied": "FEN copied",
     "analyzeLine": "Analyse this line",
-    "analyze": {
-      "open": "Analysis",
-      "hint": "Check your line with the engine"
-    },
+    "analyze": "Analyze",
     "timeLimit": {
       "title": "45 minutes are up",
       "body": "Per the guidelines: write down your final decision for your current position — and stop. The test is deliberately hard; an honest hard stop is part of the training.",
@@ -290,7 +287,8 @@
       "later": "Commit one choice for every position in this chapter first — then audit your thinking with the breakdown video.",
       "ready": "All positions committed — time for the breakdown video.",
       "watch": "Watch the breakdown video"
-    }
+    },
+    "analyzeHint": "Open the position at the cursor on lichess.org (new tab) — available once you have rated this position."
   },
   "courses": {
     "noChapter": "Trial"

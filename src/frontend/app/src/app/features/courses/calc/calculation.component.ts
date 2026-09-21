@@ -1413,21 +1413,28 @@ export class CalculationComponent implements OnInit, OnDestroy {
     );
   }
 
-  /** Öffnet den Analyse-Modus mit den Zügen EINER Linie (Wurzel → <c>leafId</c>). Jede Linie ist
-   *  linear und passt damit in den (einlinigen) Analyse-Modus; ein „from" führt zurück hierher. */
+  /**
+   * Öffnet die Stellung AM CURSOR im Lichess-Analysebrett (neuer Tab) — der Knopf erscheint,
+   * sobald die Stellung bewertet ist (User-Entscheid 2026-09-21: erst rechnen und bewerten,
+   * dann nachsehen).
+   *
+   * RCT hat bewusst KEINEN eigenen Analyse-Modus; RookHubs `/analysis`-Route ist hier nicht
+   * portiert. Der alte Navigate dorthin war toter Code und landete über `**` auf /trial —
+   * dieselbe Fehlerklasse wie die kopierten `app-navbar`-Selektoren.
+   */
+  /** Analyse EINER Linie (Lupe in der Linienliste): die Stellung an ihrem Ende öffnen —
+   *  die Knoten tragen ihre FEN, ein Cursor-Umweg ist dafür nicht nötig. */
   analyzeLine(leafId: number): void {
-    this.openAnalysis(pathToRoot(this.tree, leafId).slice(1).map(n => n.uci).filter(Boolean));
+    this.openAnalysis(findNode(this.tree, leafId)?.fen || undefined);
   }
 
-  /** Analyse der aktuell im Baum stehenden Linie (Wurzel → Cursor) — Knopf nach dem Bewerten. */
-  analyzeCurrentLine(): void {
-    this.openAnalysis(pathToRoot(this.tree, this.cursorId).slice(1).map(n => n.uci).filter(Boolean));
-  }
-
-  private openAnalysis(uci: string[]): void {
-    this.router.navigate(['/analysis'], {
-      queryParams: { fen: this.startFen, moves: uci.join(','), from: this.router.url.split('?')[0] },
-    });
+  openAnalysis(fen?: string): void {
+    const target = (fen || this.cursorFen || this.startFen || '').trim();
+    if (!target) return;
+    // Lichess erwartet die FEN IM PFAD mit Unterstrichen statt Leerzeichen (Slashes bleiben,
+    // encodeURIComponent würde sie zerlegen).
+    const url = `https://lichess.org/analysis/standard/${target.replace(/ /g, '_')}`;
+    window.open(url, '_blank', 'noopener');
   }
 
   // ===== Stellungs-Navigation (Stufe 2: INNERHALB des Kapitels) =============

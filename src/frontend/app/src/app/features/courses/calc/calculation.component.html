@@ -272,8 +272,15 @@
                   <span class="calc-review-score">{{ scoreDisplay(positionPoints, maxPointsPerPosition) }}</span>
                 }
               </button>
-              <!-- RCT: kein Engine-Analysemodus — der Review-Schritt läuft über das Breakdown-
-                   Video des Trials (RookHubs Analyse-Knopf ist hier bewusst entfernt). -->
+              <!-- Nachsehen ERST nach dem Bewerten (User-Entscheid): RCT hat keinen eigenen
+                   Engine-Modus, der Knopf öffnet die Cursor-Stellung auf lichess.org. -->
+              @if (review.grade !== null) {
+                <button type="button" mat-stroked-button class="calc-analyze-btn"
+                        [matTooltip]="'calc.analyzeHint' | translate" (click)="openAnalysis()">
+                  <mat-icon>travel_explore</mat-icon>
+                  <span>{{ 'calc.analyze' | translate }}</span>
+                </button>
+              }
             </div>
             <!-- Der Satz „Prüf die Lösung im Buch …" stand hier dauerhaft. Er gehört dorthin, wo
                  man ihn braucht: in den Ergebnis-Dialog, unmittelbar vor der Auswahl. -->
